@@ -8,13 +8,13 @@ export const ENV_CONFIG = {
   APP_TITLE: import.meta.env.VITE_APP_TITLE,
 
   // API 基础地址
-  BASE_API: import.meta.env.VITE_APP_BASE_API,
+  API_BASE_URL: import.meta.env.VITE_API_BASE_URL,
 
-  // 应用基础地址
-  BASE_URL: import.meta.env.VITE_APP_BASE_URL,
+  // API 前缀
+  API_PREFIX: import.meta.env.VITE_API_PREFIX,
 
   // 上传地址
-  UPLOAD_URL: import.meta.env.VITE_APP_UPLOAD_URL,
+  UPLOAD_URL: import.meta.env.VITE_UPLOAD_URL,
 
   // 当前环境
   MODE: import.meta.env.MODE,

@@ -65,12 +65,12 @@ export default defineConfig(({ mode }) => {
 
     server: {
       host: '0.0.0.0',
-      port: 5173,
+      port: 9527,
       open: true,
       cors: true,
       proxy: {
         '/api': {
-          target: env.VITE_APP_BASE_API || 'http://localhost:3000',
+          target: env.VITE_API_BASE_URL || 'http://localhost:3000',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api/, ''),
         },
