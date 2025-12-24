@@ -34,3 +34,12 @@ coverage
 
 # Vitest
 __screenshots__/
+
+# 环境变量文件（保留模板，忽略本地配置）
+.env.local
+.env.*.local
+
+# 自动生成的类型声明文件
+src/auto-imports.d.ts
+src/components.d.ts
+.eslintrc-auto-import.json
