@@ -34,6 +34,29 @@
   --color-text: var(--vt-c-text-light-1);
 
   --section-gap: 160px;
+
+  /* 主色调 - 蓝色系 (Element Plus 风格) */
+  --primary-color: #409eff;
+  --primary-hover: #66b1ff;
+  --primary-active: #3a8ee6;
+  
+  /* 登录页面专用颜色 */
+  --login-bg: #f0f2f5;
+  --login-box-bg: #ffffff;
+  
+  /* 文字颜色 */
+  --text-primary: #303133;
+  --text-secondary: #606266;
+  --text-placeholder: #c0c4cc;
+  
+  /* 边框颜色 */
+  --border-color: #dcdfe6;
+  --border-hover: #409eff;
+  --border-focus: #409eff;
+  
+  /* 阴影 */
+  --box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  --box-shadow-light: 0 2px 8px 0 rgba(0, 0, 0, 0.06);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -47,6 +70,24 @@
 
     --color-heading: var(--vt-c-text-dark-1);
     --color-text: var(--vt-c-text-dark-2);
+
+    /* 暗色模式 - 登录页面专用颜色 */
+    --login-bg: #1a1a1a;
+    --login-box-bg: #2c2c2c;
+    
+    /* 暗色模式 - 文字颜色 */
+    --text-primary: #e5e5e5;
+    --text-secondary: #b3b3b3;
+    --text-placeholder: #666666;
+    
+    /* 暗色模式 - 边框颜色 */
+    --border-color: #4c4c4c;
+    --border-hover: #409eff;
+    --border-focus: #409eff;
+    
+    /* 暗色模式 - 阴影 */
+    --box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.3);
+    --box-shadow-light: 0 2px 8px 0 rgba(0, 0, 0, 0.2);
   }
 }
 

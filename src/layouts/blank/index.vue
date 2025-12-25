@@ -15,6 +15,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f0f2f5;
+  background: var(--login-bg);
+  transition: background-color 0.3s;
 }
 </style>
