@@ -137,6 +137,7 @@
 - Vite 7.2 - 下一代前端构建工具
 - Element Plus 2.13 - Vue 3 组件库
 - Pinia 3.0 - Vue 状态管理
+- Sass/SCSS - CSS 预处理器
 
 **后端兼容**:
 - Spring Boot - Java 应用框架
