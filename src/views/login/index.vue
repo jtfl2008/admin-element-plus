@@ -101,7 +101,7 @@
               <el-checkbox v-model="loginForm.rememberMe" class="remember-checkbox">
                 记住我
               </el-checkbox>
-              <el-link type="primary" :underline="false" @click="handleForgotPassword">
+              <el-link type="primary" underline="never" @click="handleForgotPassword">
                 忘记密码？
               </el-link>
             </div>
@@ -264,24 +264,19 @@ function handleSocialLogin(type: string) {
 </script>
 
 
-<style scoped>
+<style scoped lang="scss">
 /* ===== 基础变量 ===== */
 .login-page {
-  --primary: #3b82f6;
-  --primary-dark: #2563eb;
-  --primary-light: #60a5fa;
-  --bg-dark: #0f172a;
-  --bg-card: rgba(30, 41, 59, 0.8);
-  --bg-input: rgba(51, 65, 85, 0.5);
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --border-color: rgba(148, 163, 184, 0.2);
-  --border-focus: rgba(59, 130, 246, 0.5);
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.4);
-  --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.3);
+  --login-bg: var(--bg-dark);
+  --login-card-bg: var(--bg-elevated);
+  --login-input-bg: var(--bg-secondary);
+  --login-text: var(--text-primary);
+  --login-text-secondary: var(--text-secondary);
+  --login-text-muted: var(--text-tertiary);
+  --login-border: var(--border-base);
+  --login-border-focus: var(--color-primary);
+  --login-primary: var(--color-primary);
+  --login-primary-hover: var(--color-primary-dark);
 }
 
 /* ===== 页面容器 ===== */
@@ -291,7 +286,7 @@ function handleSocialLogin(type: string) {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--bg-dark);
+  background: var(--login-bg);
   overflow: hidden;
 }
 
@@ -327,7 +322,7 @@ function handleSocialLogin(type: string) {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px;
+  padding: var(--spacing-2xl) var(--spacing-lg);
   gap: 80px;
   position: relative;
   z-index: 1;
@@ -348,66 +343,66 @@ function handleSocialLogin(type: string) {
 .brand-logo {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 32px;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-xl);
 }
 
 .logo-icon {
-  color: var(--primary);
+  color: var(--login-primary);
 }
 
 .logo-text {
-  font-size: 24px;
+  font-size: var(--font-size-2xl);
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--login-text);
   letter-spacing: -0.5px;
 }
 
 .brand-title {
   font-size: 42px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--login-text);
   line-height: 1.2;
-  margin: 0 0 16px 0;
+  margin: 0 0 var(--spacing-md) 0;
   letter-spacing: -1px;
 }
 
 .brand-desc {
-  font-size: 18px;
-  color: var(--text-secondary);
-  margin: 0 0 40px 0;
+  font-size: var(--font-size-lg);
+  color: var(--login-text-secondary);
+  margin: 0 0 var(--spacing-2xl) 0;
   line-height: 1.6;
 }
 
 .brand-features {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--spacing-md);
 }
 
 .feature-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  background: rgba(59, 130, 246, 0.1);
-  border-radius: 8px;
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  transition: all 0.3s ease;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-primary-light);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-primary);
+  transition: all var(--transition-normal);
 }
 
 .feature-item:hover {
-  background: rgba(59, 130, 246, 0.15);
+  background: var(--color-primary-lighter);
   transform: translateX(4px);
 }
 
 .feature-icon {
-  color: var(--primary-light);
+  color: var(--login-primary);
 }
 
 .feature-text {
-  font-size: 15px;
-  color: var(--text-secondary);
+  font-size: var(--font-size-base);
+  color: var(--login-text-secondary);
   font-weight: 500;
 }
 
@@ -420,29 +415,29 @@ function handleSocialLogin(type: string) {
 
 .login-card {
   width: 420px;
-  padding: 40px;
-  background: var(--bg-card);
+  padding: var(--spacing-2xl);
+  background: var(--login-card-bg);
   backdrop-filter: blur(20px);
-  border-radius: 16px;
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-lg);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--login-border);
+  box-shadow: var(--shadow-xl);
 }
 
 .card-header {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: var(--spacing-xl);
 }
 
 .card-title {
-  font-size: 28px;
+  font-size: var(--font-size-2xl);
   font-weight: 600;
-  color: var(--text-primary);
-  margin: 0 0 8px 0;
+  color: var(--login-text);
+  margin: 0 0 var(--spacing-sm) 0;
 }
 
 .card-subtitle {
-  font-size: 14px;
-  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  color: var(--login-text-muted);
   margin: 0;
 }
 
@@ -454,12 +449,12 @@ function handleSocialLogin(type: string) {
 
 /* Element Plus 表单项自定义样式 */
 .form-item-custom {
-  margin-bottom: 24px;
+  margin-bottom: var(--spacing-lg);
 }
 
 .form-item-custom :deep(.el-form-item__label) {
   padding: 0;
-  margin-bottom: 8px;
+  margin-bottom: var(--spacing-sm);
   line-height: 48px;
   height: 48px;
   display: flex;
@@ -467,30 +462,30 @@ function handleSocialLogin(type: string) {
 }
 
 .form-label {
-  font-size: 14px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
-  color: var(--text-secondary);
+  color: var(--login-text-secondary);
   line-height: 1;
 }
 
 /* Element Plus 输入框自定义样式 */
 .form-item-custom :deep(.el-input) {
-  --el-input-bg-color: var(--bg-input);
-  --el-input-border-color: var(--border-color);
-  --el-input-hover-border-color: var(--border-focus);
-  --el-input-focus-border-color: var(--border-focus);
-  --el-input-text-color: var(--text-primary);
-  --el-input-placeholder-color: var(--text-muted);
-  --el-input-icon-color: var(--text-muted);
-  --el-input-clear-hover-color: var(--text-secondary);
+  --el-input-bg-color: var(--login-input-bg);
+  --el-input-border-color: var(--login-border);
+  --el-input-hover-border-color: var(--login-border-focus);
+  --el-input-focus-border-color: var(--login-border-focus);
+  --el-input-text-color: var(--login-text);
+  --el-input-placeholder-color: var(--login-text-muted);
+  --el-input-icon-color: var(--login-text-muted);
+  --el-input-clear-hover-color: var(--login-text-secondary);
 }
 
 .form-item-custom :deep(.el-input__wrapper) {
-  background: var(--bg-input);
-  border-radius: 10px;
-  padding: 12px 16px;
+  background: var(--login-input-bg);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm) var(--spacing-md);
   box-shadow: none;
-  transition: all 0.3s ease;
+  transition: all var(--transition-normal);
 }
 
 .form-item-custom :deep(.el-input__wrapper:hover) {
@@ -498,34 +493,34 @@ function handleSocialLogin(type: string) {
 }
 
 .form-item-custom :deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
 }
 
 .form-item-custom :deep(.el-input__inner) {
-  color: var(--text-primary);
-  font-size: 15px;
+  color: var(--login-text);
+  font-size: var(--font-size-base);
 }
 
 .form-item-custom :deep(.el-input__inner::placeholder) {
-  color: var(--text-muted);
+  color: var(--login-text-muted);
 }
 
 .form-item-custom :deep(.el-input__prefix) {
-  color: var(--text-muted);
+  color: var(--login-text-muted);
 }
 
 .form-item-custom :deep(.el-input__suffix) {
-  color: var(--text-muted);
+  color: var(--login-text-muted);
 }
 
 /* 密码切换图标 */
 .password-toggle {
   cursor: pointer;
-  transition: color 0.2s;
+  transition: color var(--transition-fast);
 }
 
 .password-toggle:hover {
-  color: var(--text-secondary);
+  color: var(--login-text-secondary);
 }
 
 /* 表单验证错误样式 */
@@ -541,37 +536,37 @@ function handleSocialLogin(type: string) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 24px;
+  margin-bottom: var(--spacing-lg);
 }
 
 /* Element Plus 复选框自定义样式 */
 .remember-checkbox {
-  --el-checkbox-text-color: var(--text-secondary);
-  --el-checkbox-input-border-color: var(--border-color);
-  --el-checkbox-checked-bg-color: var(--primary);
-  --el-checkbox-checked-input-border-color: var(--primary);
+  --el-checkbox-text-color: var(--login-text-secondary);
+  --el-checkbox-input-border-color: var(--login-border);
+  --el-checkbox-checked-bg-color: var(--login-primary);
+  --el-checkbox-checked-input-border-color: var(--login-primary);
 }
 
 .remember-checkbox :deep(.el-checkbox__label) {
-  color: var(--text-secondary);
-  font-size: 14px;
+  color: var(--login-text-secondary);
+  font-size: var(--font-size-sm);
 }
 
 .remember-checkbox :deep(.el-checkbox__inner) {
   background-color: transparent;
-  border-color: var(--border-color);
+  border-color: var(--login-border);
 }
 
 .remember-checkbox :deep(.el-checkbox__input.is-checked .el-checkbox__inner) {
-  background-color: var(--primary);
-  border-color: var(--primary);
+  background-color: var(--login-primary);
+  border-color: var(--login-primary);
 }
 
 /* Element Plus 链接自定义样式 */
 .form-options :deep(.el-link) {
-  --el-link-text-color: var(--primary-light);
-  --el-link-hover-text-color: var(--primary);
-  font-size: 14px;
+  --el-link-text-color: var(--login-primary);
+  --el-link-hover-text-color: var(--login-primary-hover);
+  font-size: var(--font-size-sm);
 }
 
 /* ===== 登录按钮 ===== */
@@ -586,13 +581,13 @@ function handleSocialLogin(type: string) {
 .login-button {
   width: 100%;
   height: 50px;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  background: linear-gradient(135deg, var(--login-primary) 0%, var(--login-primary-hover) 100%);
   border: none;
-  border-radius: 10px;
-  font-size: 16px;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-md);
   font-weight: 600;
-  transition: all 0.3s ease;
-  box-shadow: var(--shadow-md), var(--shadow-glow);
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-md);
   --el-button-bg-color: transparent;
   --el-button-border-color: transparent;
   --el-button-hover-bg-color: transparent;
@@ -605,10 +600,10 @@ function handleSocialLogin(type: string) {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+  background: linear-gradient(135deg, var(--login-primary-hover) 0%, var(--login-primary) 100%);
   opacity: 0;
-  transition: opacity 0.3s;
-  border-radius: 10px;
+  transition: opacity var(--transition-normal);
+  border-radius: var(--radius-md);
 }
 
 .login-button:hover::before {
@@ -617,7 +612,7 @@ function handleSocialLogin(type: string) {
 
 .login-button:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-lg), 0 0 30px rgba(59, 130, 246, 0.4);
+  box-shadow: var(--shadow-lg);
 }
 
 .login-button:active {
@@ -633,8 +628,8 @@ function handleSocialLogin(type: string) {
 .divider {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin: 28px 0;
+  gap: var(--spacing-md);
+  margin: var(--spacing-xl) 0;
 }
 
 .divider::before,
@@ -642,12 +637,12 @@ function handleSocialLogin(type: string) {
   content: '';
   flex: 1;
   height: 1px;
-  background: var(--border-color);
+  background: var(--login-border);
 }
 
 .divider-text {
-  font-size: 13px;
-  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  color: var(--login-text-muted);
   white-space: nowrap;
 }
 
@@ -655,7 +650,7 @@ function handleSocialLogin(type: string) {
 .social-login {
   display: flex;
   justify-content: center;
-  gap: 16px;
+  gap: var(--spacing-md);
 }
 
 .social-btn {
@@ -664,58 +659,58 @@ function handleSocialLogin(type: string) {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-input);
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  color: var(--text-secondary);
+  background: var(--login-input-bg);
+  border: 1px solid var(--login-border);
+  border-radius: var(--radius-md);
+  color: var(--login-text-secondary);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition-normal);
 }
 
 .social-btn:hover {
-  background: rgba(59, 130, 246, 0.1);
-  border-color: var(--primary);
-  color: var(--primary);
+  background: var(--color-primary-light);
+  border-color: var(--login-primary);
+  color: var(--login-primary);
   transform: translateY(-2px);
 }
 
 /* ===== 底部链接 ===== */
 .card-footer {
   text-align: center;
-  margin-top: 28px;
-  padding-top: 24px;
-  border-top: 1px solid var(--border-color);
+  margin-top: var(--spacing-xl);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--login-border);
 }
 
 .footer-text {
-  font-size: 14px;
-  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  color: var(--login-text-muted);
 }
 
 .register-link {
-  font-size: 14px;
-  color: var(--primary-light);
+  font-size: var(--font-size-sm);
+  color: var(--login-primary);
   text-decoration: none;
   font-weight: 500;
-  margin-left: 4px;
-  transition: color 0.2s;
+  margin-left: var(--spacing-xs);
+  transition: color var(--transition-fast);
 }
 
 .register-link:hover {
-  color: var(--primary);
+  color: var(--login-primary-hover);
 }
 
 /* ===== 版权信息 ===== */
 .copyright {
   text-align: center;
-  padding: 20px;
+  padding: var(--spacing-lg);
   position: relative;
   z-index: 1;
 }
 
 .copyright p {
-  font-size: 13px;
-  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  color: var(--login-text-muted);
   margin: 0;
 }
 

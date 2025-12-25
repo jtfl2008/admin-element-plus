@@ -1,0 +1,126 @@
+/**
+ * 全局样式主入口
+ * 按照正确的顺序导入所有样式模块
+ */
+
+/* ===== 1. 变量定义 ===== */
+@import './variables/colors.scss';
+@import './variables/typography.scss';
+@import './variables/spacing.scss';
+@import './variables/shadows.scss';
+@import './variables/radius.scss';
+@import './variables/transitions.scss';
+
+/* ===== 2. Mixins ===== */
+@import './mixins/responsive.scss';
+@import './mixins/flex.scss';
+@import './mixins/animations.scss';
+
+/* ===== 3. 基础样式 ===== */
+@import './base/reset.scss';
+@import './base/typography.scss';
+@import './base/utilities.scss';
+
+/* ===== 4. 主题样式 ===== */
+@import './themes/light.scss';
+@import './themes/dark.scss';
+
+/* ===== 主题切换过渡效果 ===== */
+html.theme-transitioning,
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+  transition: background-color var(--duration-base) var(--ease-in-out),
+              border-color var(--duration-base) var(--ease-in-out),
+              color var(--duration-base) var(--ease-in-out),
+              box-shadow var(--duration-base) var(--ease-in-out) !important;
+  transition-delay: 0s !important;
+}
+
+/* ===== 5. 组件覆盖样式 ===== */
+@import './overrides/element-plus.scss';
+
+/* ===== 6. 页面过渡动画 ===== */
+/* 页面切换动画 - 使用 transform 和 opacity 优化性能 */
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all var(--duration-base) var(--ease-in-out);
+  /* 使用 will-change 提示浏览器优化动画性能 */
+  will-change: transform, opacity;
+}
+
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateX(-20px);
+}
+
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+/* 简单淡入淡出动画 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity var(--duration-base) var(--ease-in-out);
+  will-change: opacity;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* 缩放淡入动画 */
+.scale-fade-enter-active,
+.scale-fade-leave-active {
+  transition: all var(--duration-base) var(--ease-in-out);
+  will-change: transform, opacity;
+}
+
+.scale-fade-enter-from {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+.scale-fade-leave-to {
+  opacity: 0;
+  transform: scale(1.05);
+}
+
+/* 向上滑动淡入动画 */
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all var(--duration-base) var(--ease-in-out);
+  will-change: transform, opacity;
+}
+
+.slide-up-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.slide-up-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+/* 禁用动画时的样式 */
+.no-transition {
+  transition: none !important;
+}
+
+/* 性能优化：为动画元素添加硬件加速 */
+.fade-slide-enter-active,
+.fade-slide-leave-active,
+.fade-enter-active,
+.fade-leave-active,
+.scale-fade-enter-active,
+.scale-fade-leave-active,
+.slide-up-enter-active,
+.slide-up-leave-active {
+  /* 启用硬件加速 */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}

@@ -1,0 +1,101 @@
+/**
+ * 深色主题
+ * 定义深色模式下的 CSS 变量
+ * 使用 [data-theme="dark"] 选择器覆盖浅色主题变量
+ */
+
+[data-theme='dark'] {
+  /* ===== 主题标识 ===== */
+  --theme-mode: 'dark';
+
+  /* ===== 深色主题颜色覆盖 ===== */
+  /* 这些变量会覆盖 colors.scss 中定义的默认值 */
+  
+  /* 背景渐变 */
+  --bg-gradient-start: var(--gray-dark-100);
+  --bg-gradient-end: var(--gray-dark-50);
+  
+  /* 卡片背景 */
+  --card-bg: var(--gray-dark-100);
+  --card-border: var(--gray-dark-200);
+  
+  /* 输入框背景 */
+  --input-bg: var(--gray-dark-200);
+  --input-border: var(--gray-dark-300);
+  --input-border-hover: var(--gray-dark-400);
+  --input-border-focus: var(--primary-500);
+  
+  /* 按钮颜色 */
+  --button-primary-bg: var(--primary-600);
+  --button-primary-hover: var(--primary-500);
+  --button-primary-active: var(--primary-400);
+  
+  /* 链接颜色 */
+  --link-color: var(--primary-400);
+  --link-hover: var(--primary-300);
+  
+  /* 分隔线颜色 */
+  --divider-color: var(--gray-dark-200);
+  
+  /* 遮罩层 */
+  --mask-bg: rgba(0, 0, 0, 0.65);
+  
+  /* 代码块背景 */
+  --code-bg: var(--gray-dark-200);
+  --code-color: var(--gray-dark-800);
+  
+  /* 表格颜色 */
+  --table-header-bg: var(--gray-dark-200);
+  --table-row-hover: var(--gray-dark-200);
+  --table-border: var(--gray-dark-200);
+  
+  /* 菜单颜色 */
+  --menu-bg: var(--gray-dark-100);
+  --menu-item-hover: var(--gray-dark-200);
+  --menu-item-active-bg: rgba(96, 165, 250, 0.15);
+  --menu-item-active-color: var(--primary-400);
+  
+  /* 标签页颜色 */
+  --tab-bg: transparent;
+  --tab-hover-bg: var(--gray-dark-200);
+  --tab-active-bg: rgba(96, 165, 250, 0.15);
+  --tab-active-color: var(--primary-400);
+  --tab-border: var(--gray-dark-200);
+  
+  /* 头部颜色 */
+  --header-bg: var(--gray-dark-100);
+  --header-border: var(--gray-dark-200);
+  
+  /* 侧边栏颜色 */
+  --sidebar-bg: var(--gray-dark-100);
+  --sidebar-border: var(--gray-dark-200);
+  
+  /* 页脚颜色 */
+  --footer-bg: var(--gray-dark-100);
+  --footer-border: var(--gray-dark-200);
+  
+  /* 滚动条颜色 */
+  --scrollbar-thumb: var(--gray-dark-300);
+  --scrollbar-thumb-hover: var(--gray-dark-400);
+  --scrollbar-track: var(--gray-dark-100);
+  
+  /* 选中文本颜色 */
+  --selection-bg: rgba(96, 165, 250, 0.3);
+  --selection-color: var(--gray-dark-900);
+  
+  /* ===== 深色模式特殊调整 ===== */
+  /* 降低白色文本的亮度，避免过于刺眼 */
+  color-scheme: dark;
+  
+  /* 登录页面专用变量 */
+  --login-bg: #0f172a;
+  --login-card-bg: rgba(30, 41, 59, 0.8);
+  --login-input-bg: rgba(51, 65, 85, 0.5);
+  --login-text: var(--text-primary);
+  --login-text-secondary: var(--text-secondary);
+  --login-text-muted: var(--text-tertiary);
+  --login-border: rgba(148, 163, 184, 0.2);
+  --login-border-focus: rgba(59, 130, 246, 0.5);
+  --login-primary: var(--primary-400);
+  --login-primary-hover: var(--primary-500);
+}

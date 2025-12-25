@@ -16,6 +16,8 @@ export interface RouteMeta {
   hidden?: boolean
   affix?: boolean
   order?: number
+  disabled?: boolean
+  badge?: string | number
 }
 
 /**

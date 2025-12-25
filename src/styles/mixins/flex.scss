@@ -1,0 +1,96 @@
+/**
+ * Flex 布局 Mixins
+ * 常用的 Flexbox 布局辅助函数
+ */
+
+/**
+ * Flex 容器基础设置
+ * @param {string} $direction - flex-direction 值 (row, column, row-reverse, column-reverse)
+ * @param {string} $wrap - flex-wrap 值 (nowrap, wrap, wrap-reverse)
+ */
+@mixin flex($direction: row, $wrap: nowrap) {
+  display: flex;
+  flex-direction: $direction;
+  flex-wrap: $wrap;
+}
+
+/**
+ * Flex 居中对齐
+ * @param {string} $direction - flex-direction 值
+ */
+@mixin flex-center($direction: row) {
+  display: flex;
+  flex-direction: $direction;
+  align-items: center;
+  justify-content: center;
+}
+
+/**
+ * Flex 水平居中
+ */
+@mixin flex-center-x {
+  display: flex;
+  justify-content: center;
+}
+
+/**
+ * Flex 垂直居中
+ */
+@mixin flex-center-y {
+  display: flex;
+  align-items: center;
+}
+
+/**
+ * Flex 两端对齐
+ * @param {string} $align - align-items 值
+ */
+@mixin flex-between($align: center) {
+  display: flex;
+  justify-content: space-between;
+  align-items: $align;
+}
+
+/**
+ * Flex 均匀分布
+ * @param {string} $align - align-items 值
+ */
+@mixin flex-around($align: center) {
+  display: flex;
+  justify-content: space-around;
+  align-items: $align;
+}
+
+/**
+ * Flex 列布局
+ * @param {string} $align - align-items 值
+ * @param {string} $justify - justify-content 值
+ */
+@mixin flex-column($align: stretch, $justify: flex-start) {
+  display: flex;
+  flex-direction: column;
+  align-items: $align;
+  justify-content: $justify;
+}
+
+/**
+ * Flex 行布局
+ * @param {string} $align - align-items 值
+ * @param {string} $justify - justify-content 值
+ */
+@mixin flex-row($align: center, $justify: flex-start) {
+  display: flex;
+  flex-direction: row;
+  align-items: $align;
+  justify-content: $justify;
+}
+
+/**
+ * Flex 子项设置
+ * @param {number} $grow - flex-grow 值
+ * @param {number} $shrink - flex-shrink 值
+ * @param {string} $basis - flex-basis 值
+ */
+@mixin flex-item($grow: 0, $shrink: 1, $basis: auto) {
+  flex: $grow $shrink $basis;
+}

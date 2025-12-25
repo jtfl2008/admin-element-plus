@@ -27,9 +27,9 @@ export type Recordable<T = any> = Record<string, T>
 export type Nullable<T> = T | null
 
 /**
- * 设备类型
+ * 设备类型（仅支持 desktop）
  */
-export type DeviceType = 'mobile' | 'desktop'
+export type DeviceType = 'desktop'
 
 /**
  * 主题类型

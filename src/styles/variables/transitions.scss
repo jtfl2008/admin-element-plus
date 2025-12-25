@@ -1,0 +1,38 @@
+/**
+ * 过渡动画变量定义
+ * 包含持续时间、缓动函数等
+ */
+
+:root {
+  /* ===== 持续时间 ===== */
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 350ms;
+  --duration-slower: 500ms;
+
+  /* ===== 缓动函数 ===== */
+  --ease-linear: linear;
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  /* ===== 常用过渡组合 ===== */
+  --transition-base: all var(--duration-base) var(--ease-in-out);
+  --transition-colors: color var(--duration-base) var(--ease-in-out),
+    background-color var(--duration-base) var(--ease-in-out),
+    border-color var(--duration-base) var(--ease-in-out);
+  --transition-transform: transform var(--duration-base) var(--ease-in-out);
+  --transition-opacity: opacity var(--duration-base) var(--ease-in-out);
+  --transition-shadow: box-shadow var(--duration-base) var(--ease-in-out);
+
+  /* ===== Z-Index 层级 ===== */
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+  --z-notification: 1080;
+}

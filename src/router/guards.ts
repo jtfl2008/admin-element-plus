@@ -20,7 +20,7 @@ const whiteList = ['/login', '/404', '/403']
  */
 export function setupRouterGuards(router: Router) {
   // 全局前置守卫
-  router.beforeEach(async (to, from, next) => {
+  router.beforeEach(async (to, _from, next) => {
     // 显示加载进度条
     NProgress.start()
 
@@ -54,52 +54,51 @@ export function setupRouterGuards(router: Router) {
               router.addRoute(route as any)
             })
 
-            // 添加 404 路由（必须在最后）
-            router.addRoute({
-              path: '/:pathMatch(.*)*',
-              redirect: '/404',
-              meta: { hidden: true },
-            })
+            // 标记路由已加载（在添加路由后立即标记，避免重复加载）
+            routeStore.isRoutesLoaded = true
 
             // 重新导航到目标路由
             next({ ...to, replace: true })
+            return
           } catch (error) {
             // 获取用户信息失败，清除 token 并跳转到登录页
             console.error('Failed to get user info:', error)
             authStore.resetToken()
             next(`/login?redirect=${to.path}`)
             NProgress.done()
+            return
           }
-        } else {
-          // 检查路由是否需要认证
-          if (to.meta.requiresAuth !== false) {
-            // 检查用户是否有权限访问该路由
-            if (to.meta.permissions && Array.isArray(to.meta.permissions)) {
-              const hasPermission = to.meta.permissions.some((permission) =>
-                authStore.hasPermission.value(permission as string)
-              )
+        }
 
-              if (!hasPermission) {
-                // 无权限，跳转到 403 页面
-                next('/403')
-                NProgress.done()
-                return
-              }
+        // 检查路由是否需要认证
+        if (to.meta.requiresAuth !== false) {
+          // 检查用户是否有权限访问该路由
+          if (to.meta.permissions && Array.isArray(to.meta.permissions)) {
+            const hasPermission = to.meta.permissions.some((permission) =>
+              authStore.hasPermission(permission as string)
+            )
+
+            if (!hasPermission) {
+              // 无权限，跳转到 403 页面
+              next('/403')
+              NProgress.done()
+              return
             }
           }
-
-          // 添加标签页
-          if (to.meta.title && !to.meta.hidden) {
-            tabStore.addTab({
-              path: to.path,
-              name: to.name as string,
-              title: to.meta.title as string,
-              affix: to.meta.affix as boolean,
-            })
-          }
-
-          next()
         }
+
+        // 添加标签页
+        if (to.meta.title && !to.meta.hidden) {
+          tabStore.addTab({
+            key: to.path,
+            label: to.meta.title as string,
+            path: to.path,
+            closable: !to.meta.affix,
+            affix: to.meta.affix as boolean,
+          })
+        }
+
+        next()
       }
     } else {
       // 未登录

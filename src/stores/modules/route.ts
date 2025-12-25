@@ -19,7 +19,7 @@ export const useRouteStore = defineStore('route', () => {
   function setRoutes(newRoutes: RouteConfig[]) {
     routes.value = newRoutes
     menuList.value = filterMenuList(newRoutes)
-    isRoutesLoaded.value = true
+    // 注意：isRoutesLoaded 应该在路由守卫中设置，而不是在这里
   }
 
   /**
@@ -28,19 +28,19 @@ export const useRouteStore = defineStore('route', () => {
   async function generateRoutes(permissions: string[]): Promise<RouteConfig[]> {
     try {
       // 这里需要从后端获取路由配置或从本地路由配置中过滤
-      // const asyncRoutes = await getAsyncRoutes()
-      
-      // 临时使用空数组
-      const asyncRoutes: RouteConfig[] = []
+      // 临时方案：从路由配置文件导入异步路由
+      const { asyncRoutes } = await import('@/router/routes')
       
       // 根据权限过滤路由
-      const accessedRoutes = filterRoutesByPermissions(asyncRoutes, permissions)
+      const accessedRoutes = filterRoutesByPermissions(asyncRoutes as RouteConfig[], permissions)
       
       setRoutes(accessedRoutes)
       return accessedRoutes
     } catch (error) {
       console.error('Generate routes failed:', error)
-      throw error
+      // 即使失败也要设置空数组，避免菜单组件出错
+      setRoutes([])
+      return []
     }
   }
 
@@ -108,10 +108,11 @@ export const useRouteStore = defineStore('route', () => {
         return
       }
 
+      // 创建新对象，避免修改原对象
       const tmp = { ...route }
 
       // 递归过滤子路由
-      if (tmp.children) {
+      if (tmp.children && tmp.children.length > 0) {
         tmp.children = filterMenuList(tmp.children)
       }
 

@@ -4,22 +4,13 @@
 
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-
-/**
- * 标签页项
- */
-export interface TabItem {
-  path: string
-  name: string
-  title: string
-  affix?: boolean // 是否固定（不可关闭）
-}
+import type { TabItem } from '@/typings/layout'
 
 export const useTabStore = defineStore(
   'tab',
   () => {
     // 状态
-    const tabs = ref<TabItem[]>([])
+    const tabList = ref<TabItem[]>([])
     const activeTab = ref<string>('')
 
     // Actions
@@ -28,123 +19,141 @@ export const useTabStore = defineStore(
      */
     function addTab(tab: TabItem) {
       // 检查标签页是否已存在
-      const existingTab = tabs.value.find((item) => item.path === tab.path)
+      const existIndex = tabList.value.findIndex((item) => item.key === tab.key)
       
-      if (existingTab) {
-        // 如果已存在，只更新激活状态
-        activeTab.value = tab.path
-        return
+      if (existIndex === -1) {
+        // 不存在则添加
+        tabList.value.push(tab)
+      } else {
+        // 存在则更新
+        tabList.value[existIndex] = tab
       }
-
-      // 添加新标签页
-      tabs.value.push(tab)
-      activeTab.value = tab.path
+      
+      // 设置为激活标签页
+      activeTab.value = tab.key
     }
 
     /**
      * 删除标签页
      */
-    function removeTab(path: string) {
-      const index = tabs.value.findIndex((item) => item.path === path)
+    function removeTab(key: string) {
+      const index = tabList.value.findIndex((item) => item.key === key)
       
       if (index === -1) {
         return
       }
 
-      // 检查是否为固定标签页
-      if (tabs.value[index].affix) {
-        return
-      }
-
       // 如果删除的是当前激活的标签页，需要激活相邻的标签页
-      if (activeTab.value === path) {
+      if (activeTab.value === key) {
         // 优先激活右侧标签页，如果没有则激活左侧
-        const nextTab = tabs.value[index + 1] || tabs.value[index - 1]
+        const nextTab = tabList.value[index + 1] || tabList.value[index - 1]
         if (nextTab) {
-          activeTab.value = nextTab.path
+          activeTab.value = nextTab.key
         }
       }
 
-      // 删除标签页
-      tabs.value.splice(index, 1)
+      tabList.value.splice(index, 1)
     }
 
     /**
      * 删除其他标签页
      */
-    function removeOtherTabs(path: string) {
-      // 保留固定标签页和指定的标签页
-      tabs.value = tabs.value.filter((item) => item.affix || item.path === path)
-      activeTab.value = path
+    function removeOtherTabs(key: string) {
+      tabList.value = tabList.value.filter((item) => item.key === key || item.affix)
+      activeTab.value = key
     }
 
     /**
-     * 删除所有标签页
+     * 删除左侧标签页
+     */
+    function removeLeftTabs(key: string) {
+      const index = tabList.value.findIndex((item) => item.key === key)
+      if (index === -1) {
+        return
+      }
+
+      tabList.value = tabList.value.filter((item, i) => i >= index || item.affix)
+    }
+
+    /**
+     * 删除右侧标签页
+     */
+    function removeRightTabs(key: string) {
+      const index = tabList.value.findIndex((item) => item.key === key)
+      if (index === -1) {
+        return
+      }
+
+      tabList.value = tabList.value.filter((item, i) => i <= index || item.affix)
+    }
+
+    /**
+     * 删除所有标签页（保留固定标签页）
      */
     function removeAllTabs() {
-      // 只保留固定标签页
-      tabs.value = tabs.value.filter((item) => item.affix)
+      tabList.value = tabList.value.filter((item) => item.affix)
       
-      // 如果有固定标签页，激活第一个
-      if (tabs.value.length > 0) {
-        activeTab.value = tabs.value[0].path
-      } else {
-        activeTab.value = ''
+      // 如果还有固定标签页，激活第一个
+      if (tabList.value.length > 0 && tabList.value[0]) {
+        activeTab.value = tabList.value[0].key
       }
     }
 
     /**
      * 设置激活的标签页
      */
-    function setActiveTab(path: string) {
-      activeTab.value = path
+    function setActiveTab(key: string) {
+      activeTab.value = key
     }
 
     /**
-     * 删除左侧标签页
+     * 更新标签页顺序
      */
-    function removeLeftTabs(path: string) {
-      const index = tabs.value.findIndex((item) => item.path === path)
-      if (index === -1) {
-        return
-      }
-
-      // 保留固定标签页和指定路径右侧（包含）的标签页
-      tabs.value = tabs.value.filter((item, i) => item.affix || i >= index)
+    function updateTabOrder(tabs: TabItem[]) {
+      tabList.value = tabs
     }
 
     /**
-     * 删除右侧标签页
+     * 刷新标签页
      */
-    function removeRightTabs(path: string) {
-      const index = tabs.value.findIndex((item) => item.path === path)
-      if (index === -1) {
-        return
-      }
+    function refreshTab(key: string) {
+      // 这个方法需要配合路由刷新实现
+      // 可以通过重新加载组件或重定向来实现
+      console.log('刷新标签页:', key)
+    }
 
-      // 保留固定标签页和指定路径左侧（包含）的标签页
-      tabs.value = tabs.value.filter((item, i) => item.affix || i <= index)
+    /**
+     * 初始化固定标签页
+     */
+    function initAffixTabs(tabs: TabItem[]) {
+      tabs.forEach((tab) => {
+        if (tab.affix && !tabList.value.find((item) => item.key === tab.key)) {
+          tabList.value.push(tab)
+        }
+      })
     }
 
     return {
       // 状态
-      tabs,
+      tabList,
       activeTab,
       // Actions
       addTab,
       removeTab,
       removeOtherTabs,
-      removeAllTabs,
-      setActiveTab,
       removeLeftTabs,
       removeRightTabs,
+      removeAllTabs,
+      setActiveTab,
+      updateTabOrder,
+      refreshTab,
+      initAffixTabs,
     }
   },
   {
     persist: {
       key: 'tab-store',
       storage: localStorage,
-      paths: ['tabs', 'activeTab'],
     },
   }
 )

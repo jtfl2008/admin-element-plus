@@ -1,0 +1,97 @@
+/**
+ * 浅色主题
+ * 定义浅色模式下的 CSS 变量
+ * 这些变量会覆盖或补充 variables 中定义的默认值
+ */
+
+:root {
+  /* ===== 主题标识 ===== */
+  --theme-mode: 'light';
+
+  /* ===== 主题特定的颜色调整 ===== */
+  /* 浅色主题使用默认的颜色变量，这里可以根据需要进行微调 */
+  
+  /* 背景渐变（用于特殊场景） */
+  --bg-gradient-start: #ffffff;
+  --bg-gradient-end: var(--gray-50);
+  
+  /* 卡片背景 */
+  --card-bg: #ffffff;
+  --card-border: var(--border-base);
+  
+  /* 输入框背景 */
+  --input-bg: #ffffff;
+  --input-border: var(--border-base);
+  --input-border-hover: var(--border-dark);
+  --input-border-focus: var(--primary-500);
+  
+  /* 按钮颜色 */
+  --button-primary-bg: var(--primary-500);
+  --button-primary-hover: var(--primary-600);
+  --button-primary-active: var(--primary-700);
+  
+  /* 链接颜色 */
+  --link-color: var(--primary-600);
+  --link-hover: var(--primary-700);
+  
+  /* 分隔线颜色 */
+  --divider-color: var(--border-light);
+  
+  /* 遮罩层 */
+  --mask-bg: rgba(0, 0, 0, 0.45);
+  
+  /* 代码块背景 */
+  --code-bg: var(--gray-100);
+  --code-color: var(--gray-800);
+  
+  /* 表格颜色 */
+  --table-header-bg: var(--gray-50);
+  --table-row-hover: var(--gray-50);
+  --table-border: var(--border-light);
+  
+  /* 菜单颜色 */
+  --menu-bg: #ffffff;
+  --menu-item-hover: var(--gray-100);
+  --menu-item-active-bg: var(--primary-50);
+  --menu-item-active-color: var(--primary-600);
+  
+  /* 标签页颜色 */
+  --tab-bg: transparent;
+  --tab-hover-bg: var(--gray-100);
+  --tab-active-bg: var(--primary-50);
+  --tab-active-color: var(--primary-600);
+  --tab-border: var(--border-light);
+  
+  /* 头部颜色 */
+  --header-bg: #ffffff;
+  --header-border: var(--border-light);
+  
+  /* 侧边栏颜色 */
+  --sidebar-bg: #ffffff;
+  --sidebar-border: var(--border-light);
+  
+  /* 页脚颜色 */
+  --footer-bg: var(--gray-50);
+  --footer-border: var(--border-light);
+  
+  /* 滚动条颜色 */
+  --scrollbar-thumb: var(--border-base);
+  --scrollbar-thumb-hover: var(--border-dark);
+  --scrollbar-track: var(--bg-page);
+  
+  /* 选中文本颜色 */
+  --selection-bg: var(--primary-100);
+  --selection-color: var(--primary-900);
+  
+  /* 登录页面专用变量 */
+  --login-bg: var(--bg-page);
+  --login-card-bg: rgba(255, 255, 255, 0.95);
+  --login-input-bg: var(--input-bg);
+  --login-text: var(--text-primary);
+  --login-text-secondary: var(--text-secondary);
+  --login-text-muted: var(--text-tertiary);
+  --login-border: var(--border-base);
+  --login-border-focus: var(--primary-500);
+  --login-primary: var(--primary-600);
+  --login-primary-hover: var(--primary-700);
+}

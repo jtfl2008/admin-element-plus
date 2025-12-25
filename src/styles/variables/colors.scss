@@ -1,0 +1,113 @@
+/**
+ * 颜色变量定义
+ * 包含主色调、功能色、中性色等
+ */
+
+:root {
+  /* ===== 主色调 (Primary Colors) ===== */
+  --primary-50: #eff6ff;
+  --primary-100: #dbeafe;
+  --primary-200: #bfdbfe;
+  --primary-300: #93c5fd;
+  --primary-400: #60a5fa;
+  --primary-500: #3b82f6;
+  --primary-600: #2563eb;
+  --primary-700: #1d4ed8;
+  --primary-800: #1e40af;
+  --primary-900: #1e3a8a;
+
+  /* ===== 功能色 (Functional Colors) ===== */
+  /* 成功色 */
+  --success-50: #ecfdf5;
+  --success-100: #d1fae5;
+  --success-500: #10b981;
+  --success-600: #059669;
+  
+  /* 警告色 */
+  --warning-50: #fffbeb;
+  --warning-100: #fef3c7;
+  --warning-500: #f59e0b;
+  --warning-600: #d97706;
+  
+  /* 错误色 */
+  --error-50: #fef2f2;
+  --error-100: #fee2e2;
+  --error-500: #ef4444;
+  --error-600: #dc2626;
+  
+  /* 信息色 */
+  --info-50: #eff6ff;
+  --info-100: #dbeafe;
+  --info-500: #3b82f6;
+  --info-600: #2563eb;
+
+  /* ===== 中性色 (Neutral Colors) ===== */
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+
+  /* ===== 语义化颜色变量 ===== */
+  /* 文本颜色 */
+  --text-primary: var(--gray-900);
+  --text-secondary: var(--gray-600);
+  --text-tertiary: var(--gray-400);
+  --text-disabled: var(--gray-300);
+  --text-inverse: #ffffff;
+
+  /* 背景颜色 */
+  --bg-page: var(--gray-50);
+  --bg-container: #ffffff;
+  --bg-elevated: #ffffff;
+  --bg-overlay: rgba(0, 0, 0, 0.5);
+
+  /* 边框颜色 */
+  --border-base: var(--gray-200);
+  --border-light: var(--gray-100);
+  --border-dark: var(--gray-300);
+}
+
+/* ===== 深色模式颜色覆盖 ===== */
+[data-theme='dark'] {
+  /* 深色模式中性色 */
+  --gray-dark-50: #18181b;
+  --gray-dark-100: #27272a;
+  --gray-dark-200: #3f3f46;
+  --gray-dark-300: #52525b;
+  --gray-dark-400: #71717a;
+  --gray-dark-500: #a1a1aa;
+  --gray-dark-600: #d4d4d8;
+  --gray-dark-700: #e4e4e7;
+  --gray-dark-800: #f4f4f5;
+  --gray-dark-900: #fafafa;
+
+  /* 深色模式主色调 */
+  --primary-500: #60a5fa;
+  --primary-600: #3b82f6;
+
+  /* 深色模式功能色 */
+  --success-500: #34d399;
+  --warning-500: #fbbf24;
+  --error-500: #f87171;
+  --info-500: #60a5fa;
+
+  /* 深色模式语义化颜色 */
+  --text-primary: var(--gray-dark-900);
+  --text-secondary: var(--gray-dark-600);
+  --text-tertiary: var(--gray-dark-400);
+  --text-disabled: var(--gray-dark-300);
+
+  --bg-page: var(--gray-dark-50);
+  --bg-container: var(--gray-dark-100);
+  --bg-elevated: var(--gray-dark-200);
+
+  --border-base: var(--gray-dark-200);
+  --border-light: var(--gray-dark-100);
+  --border-dark: var(--gray-dark-300);
+}

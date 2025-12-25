@@ -1,0 +1,156 @@
+/**
+ * 动画 Mixins
+ * 常用的动画和过渡效果辅助函数
+ */
+
+/**
+ * 过渡动画
+ * @param {string} $properties - 要过渡的属性
+ * @param {string} $duration - 持续时间
+ * @param {string} $timing - 缓动函数
+ */
+@mixin transition($properties: all, $duration: var(--duration-base), $timing: var(--ease-in-out)) {
+  transition: $properties $duration $timing;
+}
+
+/**
+ * 多属性过渡
+ * @param {list} $transitions - 过渡列表
+ * @example
+ *   @include transitions((color 0.3s, background-color 0.3s));
+ */
+@mixin transitions($transitions...) {
+  transition: $transitions;
+}
+
+/**
+ * 悬停效果
+ * @param {string} $property - 要改变的属性
+ * @param {string} $value - 悬停时的值
+ */
+@mixin hover-effect($property: transform, $value: translateY(-2px)) {
+  transition: $property var(--duration-base) var(--ease-in-out);
+  
+  &:hover {
+    #{$property}: $value;
+  }
+}
+
+/**
+ * 淡入淡出动画
+ * @param {string} $duration - 持续时间
+ */
+@mixin fade($duration: var(--duration-base)) {
+  &-enter-active,
+  &-leave-active {
+    transition: opacity $duration var(--ease-in-out);
+  }
+  
+  &-enter-from,
+  &-leave-to {
+    opacity: 0;
+  }
+}
+
+/**
+ * 滑动淡入动画
+ * @param {string} $duration - 持续时间
+ * @param {string} $distance - 滑动距离
+ */
+@mixin slide-fade($duration: var(--duration-base), $distance: 20px) {
+  &-enter-active,
+  &-leave-active {
+    transition: all $duration var(--ease-in-out);
+  }
+  
+  &-enter-from {
+    opacity: 0;
+    transform: translateX(-$distance);
+  }
+  
+  &-leave-to {
+    opacity: 0;
+    transform: translateX($distance);
+  }
+}
+
+/**
+ * 缩放动画
+ * @param {string} $duration - 持续时间
+ * @param {number} $scale - 缩放比例
+ */
+@mixin scale($duration: var(--duration-base), $scale: 0.95) {
+  &-enter-active,
+  &-leave-active {
+    transition: all $duration var(--ease-in-out);
+  }
+  
+  &-enter-from,
+  &-leave-to {
+    opacity: 0;
+    transform: scale($scale);
+  }
+}
+
+/**
+ * GPU 加速
+ * 用于优化动画性能
+ */
+@mixin gpu-accelerate {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/**
+ * 加载动画
+ * @param {string} $duration - 持续时间
+ */
+@mixin loading-spin($duration: 1s) {
+  animation: spin $duration linear infinite;
+  
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
+
+/**
+ * 脉冲动画
+ * @param {string} $duration - 持续时间
+ */
+@mixin pulse($duration: 2s) {
+  animation: pulse $duration cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+}
+
+/**
+ * 弹跳动画
+ * @param {string} $duration - 持续时间
+ */
+@mixin bounce($duration: 1s) {
+  animation: bounce $duration infinite;
+  
+  @keyframes bounce {
+    0%, 100% {
+      transform: translateY(-25%);
+      animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+    }
+    50% {
+      transform: translateY(0);
+      animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+    }
+  }
+}
