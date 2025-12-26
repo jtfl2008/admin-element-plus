@@ -27,12 +27,18 @@ export const useRouteStore = defineStore('route', () => {
    */
   async function generateRoutes(permissions: string[]): Promise<RouteConfig[]> {
     try {
-      // 这里需要从后端获取路由配置或从本地路由配置中过滤
-      // 临时方案：从路由配置文件导入异步路由
+      // 从路由配置文件导入异步路由
       const { asyncRoutes } = await import('@/router/routes')
       
-      // 根据权限过滤路由
-      const accessedRoutes = filterRoutesByPermissions(asyncRoutes as RouteConfig[], permissions)
+      // 如果没有权限数据或权限为空,默认加载所有路由(开发模式)
+      let accessedRoutes: RouteConfig[]
+      if (!permissions || permissions.length === 0) {
+        // 开发模式:加载所有路由
+        accessedRoutes = asyncRoutes as RouteConfig[]
+      } else {
+        // 生产模式:根据权限过滤路由
+        accessedRoutes = filterRoutesByPermissions(asyncRoutes as RouteConfig[], permissions)
+      }
       
       setRoutes(accessedRoutes)
       return accessedRoutes

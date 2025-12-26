@@ -144,44 +144,94 @@ onUnmounted(() => {
 .context-menu {
   position: fixed;
   z-index: 9999;
-  min-width: 140px;
-  background-color: var(--bg-elevated);
-  border: 1px solid var(--border-base);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  padding: var(--spacing-xs) 0;
-  backdrop-filter: blur(8px);
+  min-width: 160px;
+  background-color: var(--color-bg-2, #ffffff);
+  border: 1px solid var(--color-border, #e5e5e5);
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  padding: var(--spacing-xs, 8px);
+  backdrop-filter: blur(12px);
+  animation: menuFadeIn 0.2s ease-out;
+}
+
+@keyframes menuFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .menu-item {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-md);
-  font-size: var(--font-size-sm);
-  color: var(--text-primary);
+  gap: var(--spacing-sm, 12px);
+  padding: var(--spacing-sm, 10px) var(--spacing-md, 14px);
+  font-size: 14px;
+  color: var(--color-text-1, #333);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--transition-duration, 0.3s);
+  border-radius: var(--radius-md, 8px);
+  user-select: none;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 3px;
+    height: 100%;
+    background-color: var(--color-primary, #1890ff);
+    transform: scaleY(0);
+    transition: transform var(--transition-duration, 0.3s);
+  }
 
   &:hover {
-    background-color: var(--bg-hover);
-    color: var(--color-primary);
+    background-color: var(--color-primary-light, #e6f7ff);
+    color: var(--color-primary, #1890ff);
+    padding-left: calc(var(--spacing-md, 14px) + 6px);
+
+    &::before {
+      transform: scaleY(1);
+    }
 
     .el-icon {
-      color: var(--color-primary);
+      color: var(--color-primary, #1890ff);
+      transform: scale(1.1);
     }
   }
 
+  &:active {
+    transform: scale(0.98);
+  }
+
   .el-icon {
-    font-size: var(--font-size-base);
-    color: var(--text-secondary);
-    transition: color var(--transition-fast);
+    font-size: 16px;
+    color: var(--color-text-2, #666);
+    transition: all var(--transition-duration, 0.3s);
+    flex-shrink: 0;
+  }
+
+  span {
+    flex: 1;
+    white-space: nowrap;
   }
 }
 
 .menu-divider {
   height: 1px;
-  margin: var(--spacing-xs) 0;
-  background-color: var(--border-light);
+  margin: var(--spacing-xs, 6px) var(--spacing-sm, 10px);
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--color-border, #e5e5e5) 20%,
+    var(--color-border, #e5e5e5) 80%,
+    transparent
+  );
 }
 </style>

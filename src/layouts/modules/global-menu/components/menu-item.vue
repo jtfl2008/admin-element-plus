@@ -1,5 +1,5 @@
 <template>
-  <el-menu-item :index="item.path || item.name || ''" :disabled="item.meta?.disabled">
+  <el-menu-item :index="fullPath" :disabled="item.meta?.disabled">
     <el-icon v-if="item.meta?.icon">
       <component :is="item.meta.icon" />
     </el-icon>
@@ -16,14 +16,38 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { RouteConfig } from '@/typings/router'
 
 interface Props {
   /** 菜单项数据 */
   item: RouteConfig
+  /** 基础路径 */
+  basePath?: string
 }
 
-defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  basePath: '',
+})
+
+/**
+ * 完整路径
+ */
+const fullPath = computed(() => {
+  const path = props.item.path || props.item.name || ''
+  
+  // 如果是绝对路径,直接返回
+  if (path.startsWith('/')) {
+    return path
+  }
+  
+  // 如果有基础路径,拼接
+  if (props.basePath) {
+    return `${props.basePath}/${path}`.replace(/\/+/g, '/')
+  }
+  
+  return path
+})
 
 /**
  * 获取徽章类型

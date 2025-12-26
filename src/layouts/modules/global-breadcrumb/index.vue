@@ -72,29 +72,40 @@ const breadcrumbList = computed<BreadcrumbItem[]>(() => {
     .el-breadcrumb__inner {
       display: inline-flex;
       align-items: center;
-      gap: var(--spacing-xs);
+      gap: var(--spacing-xs, 8px);
       font-weight: normal;
-      font-size: var(--font-size-sm);
-      color: var(--text-secondary);
-      transition: color var(--transition-fast);
+      font-size: 14px;
+      color: var(--color-text-2, #666);
+      transition: all var(--transition-duration, 0.3s);
+      padding: 4px 8px;
+      border-radius: var(--radius-sm, 4px);
 
       &:hover {
-        color: var(--color-primary);
+        color: var(--color-primary, #1890ff);
+        background-color: var(--color-bg-1, #f5f5f5);
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
       }
     }
 
     .el-breadcrumb__separator {
-      color: var(--text-tertiary);
-      margin: 0 var(--spacing-xs);
+      color: var(--color-text-3, #999);
+      margin: 0 var(--spacing-xs, 4px);
+      font-weight: normal;
     }
 
     &:last-child .el-breadcrumb__inner {
-      color: var(--text-primary);
-      font-weight: 500;
+      color: var(--color-text-1, #333);
+      font-weight: 600;
       cursor: default;
+      background-color: var(--color-primary-light, #e6f7ff);
 
       &:hover {
-        color: var(--text-primary);
+        color: var(--color-text-1, #333);
+        background-color: var(--color-primary-light, #e6f7ff);
       }
     }
   }

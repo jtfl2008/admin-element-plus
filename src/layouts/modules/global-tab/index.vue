@@ -324,36 +324,46 @@ function handleDrop(e: DragEvent, targetTab: TabItemType) {
 .global-tab {
   display: flex;
   align-items: center;
-  height: var(--tab-height);
-  background-color: var(--bg-container);
-  border-bottom: 1px solid var(--tab-border);
+  height: 48px;
+  background-color: var(--color-bg-2, #ffffff);
+  border-bottom: 1px solid var(--color-border, #e5e5e5);
   position: relative;
+  padding: 0 var(--spacing-sm, 12px);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 }
 
 .tab-scroll-button {
   flex-shrink: 0;
-  width: 32px;
-  height: 100%;
+  width: 36px;
+  height: 36px;
   border: none;
   background: transparent;
   cursor: pointer;
-  transition: var(--transition-colors);
+  transition: all var(--transition-duration, 0.3s);
+  border-radius: var(--radius-sm, 4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   &:hover {
-    background-color: var(--tab-hover-bg);
+    background-color: var(--color-bg-1, #f5f5f5);
+  }
+
+  &:active {
+    transform: scale(0.95);
   }
 
   &.left {
-    border-right: 1px solid var(--tab-border);
+    margin-right: var(--spacing-xs, 8px);
   }
 
   &.right {
-    border-left: 1px solid var(--tab-border);
+    margin-left: var(--spacing-xs, 8px);
   }
 
   .el-icon {
-    font-size: var(--text-sm);
-    color: var(--text-secondary);
+    font-size: 16px;
+    color: var(--color-text-2, #666);
   }
 }
 
@@ -361,10 +371,11 @@ function handleDrop(e: DragEvent, targetTab: TabItemType) {
   flex: 1;
   display: flex;
   align-items: center;
-  padding: 0 var(--spacing-2);
+  gap: var(--spacing-xs, 8px);
   overflow-x: auto;
   overflow-y: hidden;
   white-space: nowrap;
+  padding: var(--spacing-xs, 8px) 0;
 
   /* 隐藏滚动条 */
   &::-webkit-scrollbar {

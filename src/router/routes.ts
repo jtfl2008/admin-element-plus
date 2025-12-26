@@ -61,8 +61,19 @@ export const constantRoutes: RouteRecordRaw[] = [
   {
     path: '/',
     component: MainLayout,
-    redirect: '/home',
+    redirect: '/workbench',
     children: [
+      {
+        path: 'workbench',
+        name: 'Workbench',
+        component: () => import('@/views/workbench/index.vue'),
+        meta: {
+          title: '工作台',
+          icon: 'Monitor',
+          requiresAuth: true,
+          affix: true,
+        },
+      },
       {
         path: 'home',
         name: 'Home',
@@ -71,7 +82,6 @@ export const constantRoutes: RouteRecordRaw[] = [
           title: '首页',
           icon: 'HomeFilled',
           requiresAuth: true,
-          affix: true,
         },
       },
       {
@@ -92,31 +102,70 @@ export const constantRoutes: RouteRecordRaw[] = [
  * 动态路由（需要根据权限动态加载）
  */
 export const asyncRoutes: RouteRecordRaw[] = [
-  // 这里可以添加需要权限控制的路由
-  // 示例：
-  // {
-  //   path: '/system',
-  //   component: MainLayout,
-  //   meta: {
-  //     title: '系统管理',
-  //     icon: 'Setting',
-  //     requiresAuth: true,
-  //     permissions: ['system:view'],
-  //   },
-  //   children: [
-  //     {
-  //       path: 'user',
-  //       name: 'SystemUser',
-  //       component: () => import('@/views/system/user/index.vue'),
-  //       meta: {
-  //         title: '用户管理',
-  //         icon: 'User',
-  //         requiresAuth: true,
-  //         permissions: ['system:user:view'],
-  //       },
-  //     },
-  //   ],
-  // },
+  // 系统管理
+  {
+    path: '/system',
+    component: MainLayout,
+    redirect: '/system/user',
+    meta: {
+      title: '系统管理',
+      icon: 'Setting',
+      requiresAuth: true,
+      order: 1,
+    },
+    children: [
+      {
+        path: 'user',
+        name: 'SystemUser',
+        component: () => import('@/views/system/user/index.vue'),
+        meta: {
+          title: '用户管理',
+          icon: 'User',
+          requiresAuth: true,
+        },
+      },
+      {
+        path: 'role',
+        name: 'SystemRole',
+        component: () => import('@/views/system/role/index.vue'),
+        meta: {
+          title: '角色管理',
+          icon: 'UserFilled',
+          requiresAuth: true,
+        },
+      },
+      {
+        path: 'menu',
+        name: 'SystemMenu',
+        component: () => import('@/views/system/menu/index.vue'),
+        meta: {
+          title: '菜单管理',
+          icon: 'Menu',
+          requiresAuth: true,
+        },
+      },
+      {
+        path: 'dept',
+        name: 'SystemDept',
+        component: () => import('@/views/system/dept/index.vue'),
+        meta: {
+          title: '部门管理',
+          icon: 'OfficeBuilding',
+          requiresAuth: true,
+        },
+      },
+      {
+        path: 'dict',
+        name: 'SystemDict',
+        component: () => import('@/views/system/dict/index.vue'),
+        meta: {
+          title: '字典管理',
+          icon: 'Collection',
+          requiresAuth: true,
+        },
+      },
+    ],
+  },
 ]
 
 /**

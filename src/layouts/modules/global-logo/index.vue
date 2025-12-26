@@ -4,11 +4,11 @@
       <img v-if="logoUrl" :src="logoUrl" alt="Logo" />
       <span v-else class="logo-placeholder">{{ logoText }}</span>
     </div>
-    <transition name="fade">
+    <!-- <transition name="fade">
       <div v-if="!collapsed" class="logo-title">
         {{ title }}
       </div>
-    </transition>
+    </transition> -->
   </div>
 </template>
 

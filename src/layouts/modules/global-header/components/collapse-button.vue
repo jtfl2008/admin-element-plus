@@ -1,7 +1,8 @@
 <template>
   <button class="collapse-button" @click="handleToggle">
     <el-icon>
-      <component :is="collapsed ? 'Expand' : 'Fold'" />
+      <Expand v-if="collapsed" />
+      <Fold v-else />
     </el-icon>
   </button>
 </template>

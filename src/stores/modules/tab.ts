@@ -25,8 +25,11 @@ export const useTabStore = defineStore(
         // 不存在则添加
         tabList.value.push(tab)
       } else {
-        // 存在则更新
-        tabList.value[existIndex] = tab
+        // 存在则更新(保留原有数据,只更新必要字段)
+        tabList.value[existIndex] = {
+          ...tabList.value[existIndex],
+          ...tab,
+        }
       }
       
       // 设置为激活标签页
@@ -128,9 +131,17 @@ export const useTabStore = defineStore(
     function initAffixTabs(tabs: TabItem[]) {
       tabs.forEach((tab) => {
         if (tab.affix && !tabList.value.find((item) => item.key === tab.key)) {
-          tabList.value.push(tab)
+          tabList.value.unshift(tab) // 使用 unshift 确保固定标签在最前面
         }
       })
+    }
+
+    /**
+     * 清理无效标签页
+     */
+    function cleanInvalidTabs() {
+      // 移除没有 label 的标签页
+      tabList.value = tabList.value.filter((item) => item.label && item.label.trim() !== '')
     }
 
     return {
@@ -148,6 +159,7 @@ export const useTabStore = defineStore(
       updateTabOrder,
       refreshTab,
       initAffixTabs,
+      cleanInvalidTabs,
     }
   },
   {

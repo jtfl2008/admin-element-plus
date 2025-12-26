@@ -44,25 +44,26 @@ withDefaults(defineProps<Props>(), {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: var(--header-height);
-  padding: 0 var(--spacing-6);
-  background-color: var(--header-bg);
-  border-bottom: 1px solid var(--header-border);
-  box-shadow: var(--shadow-sm);
+  height: 60px;
+  padding: 0 var(--spacing-lg, 24px);
+  background-color: var(--color-bg-2, #ffffff);
+  border-bottom: 1px solid var(--color-border, #e5e5e5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   backdrop-filter: blur(8px);
-  transition: var(--transition-base);
+  transition: all var(--transition-duration, 0.3s);
 
   &.is-fixed {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    z-index: var(--z-fixed);
+    z-index: 1000;
   }
 
   // 响应式调整
   @include respond-to-max('md') {
-    padding: 0 var(--spacing-4);
+    padding: 0 var(--spacing-md, 16px);
+    height: 56px;
   }
 }
 
@@ -71,16 +72,21 @@ withDefaults(defineProps<Props>(), {
 .header-right {
   display: flex;
   align-items: center;
-  gap: var(--spacing-4);
+  gap: var(--spacing-md, 16px);
 
   @include respond-to-max('md') {
-    gap: var(--spacing-2);
+    gap: var(--spacing-sm, 12px);
   }
 }
 
 .header-left {
   flex-shrink: 0;
   min-width: 0;
+  gap: var(--spacing-lg, 20px);
+
+  @include respond-to-max('md') {
+    gap: var(--spacing-md, 16px);
+  }
 }
 
 .header-center {
@@ -93,10 +99,10 @@ withDefaults(defineProps<Props>(), {
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: var(--spacing-2);
+  gap: var(--spacing-sm, 12px);
 
   @include respond-to-max('md') {
-    gap: var(--spacing-1);
+    gap: var(--spacing-xs, 8px);
   }
 }
 
@@ -105,30 +111,42 @@ withDefaults(defineProps<Props>(), {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   flex-shrink: 0;
-  border-radius: var(--radius-sm);
-  transition: all var(--transition-fast);
+  border-radius: var(--radius-md, 8px);
+  transition: all var(--transition-duration, 0.3s);
+  cursor: pointer;
 
   &:hover {
-    background-color: var(--bg-hover);
+    background-color: var(--color-bg-1, #f5f5f5);
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 
   .el-icon {
-    font-size: 18px;
-    color: var(--text-secondary);
-    transition: all var(--transition-normal);
+    font-size: 20px;
+    color: var(--color-text-2, #666);
+    transition: all var(--transition-duration, 0.3s);
   }
 
   &:hover .el-icon {
-    color: var(--color-primary);
+    color: var(--color-primary, #1890ff);
   }
 }
 
 // 用户中心特殊样式
 :deep(.user-center) {
   width: auto;
-  padding: 0 var(--spacing-sm);
+  padding: 0 var(--spacing-md, 16px);
+  height: 40px;
+  border-radius: var(--radius-md, 8px);
+
+  &:hover {
+    background-color: var(--color-bg-1, #f5f5f5);
+  }
 }
 </style>

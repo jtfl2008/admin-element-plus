@@ -9,8 +9,8 @@
     @select="handleSelect"
   >
     <template v-for="item in visibleItems" :key="item.path || item.name">
-      <SubMenu v-if="item.children && item.children.length > 0" :item="item" :base-path="item.path" />
-      <MenuItem v-else :item="item" />
+      <SubMenu v-if="item.children && item.children.length > 0" :item="item" :base-path="item.path || ''" />
+      <MenuItem v-else :item="item" :base-path="''" />
     </template>
   </el-menu>
 </template>

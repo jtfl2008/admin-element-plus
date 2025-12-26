@@ -21,7 +21,7 @@
         :base-path="resolvePath(child.path)"
         :level="currentLevel + 1"
       />
-      <MenuItem v-else :item="child" />
+      <MenuItem v-else :item="child" :base-path="basePath" />
     </template>
   </el-sub-menu>
 </template>
@@ -68,7 +68,10 @@ const visibleChildren = computed(() => {
 function resolvePath(path?: string): string {
   if (!path) return props.basePath
   if (path.startsWith('/')) return path
-  return `${props.basePath}/${path}`.replace(/\/+/g, '/')
+  
+  // 拼接路径并规范化
+  const fullPath = props.basePath ? `${props.basePath}/${path}` : path
+  return fullPath.replace(/\/+/g, '/')
 }
 
 /**
