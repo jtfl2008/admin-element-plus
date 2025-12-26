@@ -96,6 +96,16 @@ export const constantRoutes: RouteRecordRaw[] = [
       },
     ],
   },
+  {
+    path: '/demo',
+    name: 'Demo',
+    component: () => import('@/views/demo/demo.vue'),
+    meta: {
+      title: '示例页面',
+      // icon: 'Monitor',
+      // requiresAuth: true,
+    },
+  },
 ]
 
 /**
