@@ -25,6 +25,7 @@
       ref="tableRef"
       :data="props.data"
       :empty-text="props.emptyText"
+      :max-height="props.maxHeight"
       row-key="id"
       v-bind="$attrs"
       @selection-change="onSelectionChange"
@@ -66,7 +67,11 @@
           </el-table-column>
         </el-table-column>
         <!-- 普通列 -->
-        <el-table-column v-else v-bind="getColumnBindProps(column)">
+        <el-table-column 
+          v-else 
+          v-bind="getColumnBindProps(column)"
+          :fixed="column.buttons?.length ? 'right' : column.fixed"
+        >
           <template v-if="hasCustomContent(column)" #default="scope">
             <CellContent :column="column" :scope="scope" />
           </template>
@@ -99,6 +104,7 @@
 import { ref, computed, useSlots, type FunctionalComponent, h } from 'vue';
 import { ElButton } from 'element-plus';
 import type { TableInstance } from 'element-plus';
+import type { ToolbarItem, ColumnItem, TableScope } from './types';
 
 import {
   getLabelByValue,
@@ -130,15 +136,15 @@ defineOptions({
 // });
 const props = defineProps({
   toolbars: {
-    type: Array,
+    type: Array as () => ToolbarItem[],
     default: () => [],
   },
   data: {
-    type: Array,
+    type: Array as () => Record<string, any>[],
     default: () => [],
   },
   columns: {
-    type: Array,
+    type: Array as () => ColumnItem[],
     default: () => [],
   },
   index: {
@@ -170,12 +176,16 @@ const props = defineProps({
     default: true,
   },
   pageSizes: {
-    type: Array,
+    type: Array as () => number[],
     default: () => [10, 20, 30, 40, 50, 100],
   },
   emptyText: {
     type: String,
     default: '暂无数据',
+  },
+  maxHeight: {
+    type: [Number, String],
+    default: 'calc(100vh - 380px)',
   },
 });
 
@@ -225,15 +235,15 @@ const onSelectionChange = (selection: any[]) => {
 
 // 工具函数
 /** 获取工具栏按钮的额外属性 */
-const getToolbarButtonProps = (toolbar) => {
+const getToolbarButtonProps = (toolbar: ToolbarItem) => {
   const { label, click, icon, disabled, type, ...rest } = toolbar;
   return rest;
 };
 
 // 单元格内容渲染组件
 const CellContent: FunctionalComponent<{
-  column;
-  scope;
+  column: ColumnItem;
+  scope: TableScope;
 }> = ({ column, scope }) => {
   // 自定义插槽
   if (column.cellSlot && slots[column.cellSlot]) {
@@ -307,11 +317,16 @@ defineExpose({
 
 <style scoped lang="scss">
 .pro-table {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
   .pro-toolbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 8px;
+    margin-bottom: 16px;
+    flex-shrink: 0;
 
     .button-group {
       display: flex;
@@ -320,10 +335,27 @@ defineExpose({
     }
   }
 
+  :deep(.el-table) {
+    flex: 1;
+    
+    // 固定表头样式优化
+    .el-table__header-wrapper {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    
+    // 固定列阴影优化
+    .el-table__fixed-right {
+      box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+    }
+  }
+
   .pro-pagination {
-    margin-top: 20px;
+    margin-top: 16px;
     display: flex;
     justify-content: flex-end;
+    flex-shrink: 0;
   }
 
   // 操作按钮组样式

@@ -9,6 +9,11 @@ import 'nprogress/nprogress.css'
 import { createApp } from 'vue'
 import App from './App.vue'
 
+// Element Plus 全局注册
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
+import zhCn from 'element-plus/es/locale/lang/zh-cn'
+
 // 导入 Store 和 Router
 import { setupStore } from './stores'
 import { setupRouter } from './router'
@@ -19,6 +24,11 @@ import { useTabStore } from './stores/modules/tab'
 
 // 创建应用实例
 const app = createApp(App)
+
+// 注册 Element Plus
+app.use(ElementPlus, {
+  locale: zhCn, // 中文语言包
+})
 
 // 配置 Store
 setupStore(app)

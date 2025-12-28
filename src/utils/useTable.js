@@ -1,4 +1,6 @@
+import { ref, nextTick, onMounted } from 'vue';
 import { ElLoading } from 'element-plus';
+
 let useTable = ({
   getTableData,
   inQuery,
@@ -7,7 +9,7 @@ let useTable = ({
   downloadFile,
 }) => {
   let queryFormRef = ref(null);
-  let queryForm = ref(null);
+  let queryForm = ref({});
   let pageNum = ref(1);
   let pageSize = ref(10);
   let data = ref([]);
@@ -67,9 +69,11 @@ let useTable = ({
       await inReset();
     } else {
       // 清空查询表单
-      await queryFormRef.value.resetFields();
-      // 重置 queryForm 为 null，清除所有查询条件
-      queryForm.value = null;
+      if (queryFormRef.value?.resetFields) {
+        await queryFormRef.value.resetFields();
+      }
+      // 重置 queryForm 为空对象，清除所有查询条件
+      queryForm.value = {};
       // 刷新数据
       refresh();
     }

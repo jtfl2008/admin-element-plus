@@ -343,6 +343,12 @@ const dialogSections = computed(() => [
         span: 12,
         slotName: 'selectTableMultiple',
       },
+      {
+        prop: 'userName',
+        label: '配置的自定义组件',
+        component: userSelect,  // 必须传递组件对象 , 不能使用字符串形式
+        span: 12,
+      },
       { prop: 'remark', label: '备注', component: 'input', type: 'textarea', span: 24 },
       // date-picker
       { prop: 'date', label: '日期', component: 'date-picker', type: 'date', span: 12 },

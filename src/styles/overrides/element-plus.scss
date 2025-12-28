@@ -147,84 +147,22 @@
 }
 
 /* ===== 输入框组件 (Input) ===== */
+/* 使用 Element Plus 默认样式，仅调整颜色变量 */
 .el-input {
-  &__wrapper {
-    border-radius: var(--radius-md);
-    background-color: var(--input-bg);
-    border: 1px solid var(--input-border);
-    transition: all var(--duration-fast) var(--ease-in-out);
-    box-shadow: none;
-
-    &:hover {
-      border-color: var(--input-border-hover);
-    }
-
-    &.is-focus {
-      border-color: var(--input-border-focus);
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
-  }
-
   &__inner {
     color: var(--text-primary);
-    font-size: var(--text-sm);
 
     &::placeholder {
       color: var(--text-disabled);
     }
   }
-
-  /* 大尺寸输入框 */
-  &--large {
-    .el-input__wrapper {
-      padding: 0 var(--spacing-4);
-      min-height: 40px;
-    }
-
-    .el-input__inner {
-      font-size: var(--text-base);
-    }
-  }
-
-  /* 默认尺寸输入框 */
-  &--default {
-    .el-input__wrapper {
-      padding: 0 var(--spacing-3);
-      min-height: 32px;
-    }
-  }
-
-  /* 小尺寸输入框 */
-  &--small {
-    .el-input__wrapper {
-      padding: 0 var(--spacing-2);
-      min-height: 24px;
-    }
-
-    .el-input__inner {
-      font-size: var(--text-xs);
-    }
-  }
 }
 
 /* ===== 文本域组件 (Textarea) ===== */
+/* 使用 Element Plus 默认样式，仅调整颜色 */
 .el-textarea {
   &__inner {
-    border-radius: var(--radius-md);
-    background-color: var(--input-bg);
-    border-color: var(--input-border);
     color: var(--text-primary);
-    font-size: var(--text-sm);
-    transition: all var(--duration-fast) var(--ease-in-out);
-
-    &:hover {
-      border-color: var(--input-border-hover);
-    }
-
-    &:focus {
-      border-color: var(--input-border-focus);
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
 
     &::placeholder {
       color: var(--text-disabled);
@@ -253,23 +191,7 @@
 }
 
 /* ===== 选择器组件 (Select) ===== */
-.el-select {
-  &__wrapper {
-    border-radius: var(--radius-md);
-    background-color: var(--input-bg);
-    border-color: var(--input-border);
-    transition: all var(--duration-fast) var(--ease-in-out);
-
-    &:hover {
-      border-color: var(--input-border-hover);
-    }
-
-    &.is-focused {
-      border-color: var(--input-border-focus);
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
-  }
-}
+/* 使用 Element Plus 默认样式 */
 
 /* 选择器下拉面板 */
 .el-select-dropdown {
@@ -987,22 +909,7 @@
 }
 
 /* ===== 日期选择器组件 (DatePicker) ===== */
-.el-date-editor {
-  &.el-input__wrapper {
-    border-radius: var(--radius-md);
-    background-color: var(--input-bg);
-    border-color: var(--input-border);
-
-    &:hover {
-      border-color: var(--input-border-hover);
-    }
-
-    &.is-focus {
-      border-color: var(--input-border-focus);
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
-  }
-}
+/* 使用 Element Plus 默认样式 */
 
 .el-picker-panel {
   background-color: var(--bg-container);

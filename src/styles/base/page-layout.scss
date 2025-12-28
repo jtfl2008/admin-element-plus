@@ -1,0 +1,92 @@
+/**
+ * 页面布局公共样式
+ * 用于系统管理页面的通用布局样式
+ */
+
+/* ===== 页面容器 ===== */
+.page-container {
+  padding: 16px;
+  height: 100%;
+
+  .el-container {
+    height: 100%;
+  }
+
+  /* 主内容区域 */
+  .el-main.page-main {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    /* 查询表单卡片 */
+    .query-card {
+      flex-shrink: 0;
+      margin: 0;
+    }
+
+    /* 数据表格卡片 */
+    .table-card {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      margin: 0;
+
+      :deep(.el-card__body) {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+    }
+  }
+}
+
+/* ===== 侧边栏样式 ===== */
+.page-container .page-aside {
+  margin-right: 16px;
+
+  .el-card {
+    height: 100%;
+
+    :deep(.el-card__body) {
+      height: calc(100% - 56px);
+      overflow-y: auto;
+    }
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+/* ===== 树形组件样式 ===== */
+.custom-tree-node {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ===== 响应式布局 ===== */
+@media (max-width: 768px) {
+  .page-container {
+    padding: 8px;
+
+    .el-container {
+      flex-direction: column;
+    }
+
+    .page-aside {
+      width: 100%;
+      margin-right: 0;
+      margin-bottom: 16px;
+      max-height: 300px;
+    }
+
+    .el-main.page-main {
+      gap: 12px;
+    }
+  }
+}
