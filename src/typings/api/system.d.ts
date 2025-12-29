@@ -308,3 +308,89 @@ export interface TenantPackageMenuTree {
   menus: MenuTreeNode[]
   checkedKeys: number[]
 }
+
+/**
+ * 字典类型实体
+ */
+export interface DictType {
+  dictId: number              // 字典主键
+  dictName: string            // 字典名称
+  dictType: string            // 字典类型
+  status: '0' | '1'           // 状态（0:正常 1:停用）
+  remark?: string             // 备注
+  createTime?: string         // 创建时间
+  updateTime?: string         // 更新时间
+}
+
+/**
+ * 字典类型搜索参数
+ */
+export interface DictTypeSearchParams extends PageQuery {
+  dictName?: string           // 字典名称
+  dictType?: string           // 字典类型
+  status?: '0' | '1'          // 状态
+}
+
+/**
+ * 字典类型操作参数（新增/编辑）
+ */
+export interface DictTypeOperateParams {
+  dictId?: number             // 字典主键（编辑时必填）
+  dictName: string            // 字典名称
+  dictType: string            // 字典类型
+  remark?: string             // 备注
+}
+
+/**
+ * 字典数据实体
+ */
+export interface DictData {
+  dictCode: number            // 字典编码
+  dictType: string            // 字典类型
+  dictLabel: string           // 字典标签
+  dictValue: string           // 字典键值
+  dictSort: number            // 字典排序
+  listClass: string           // 表格回显样式
+  cssClass?: string           // CSS样式类名
+  isDefault: 'Y' | 'N'        // 是否默认（Y:是 N:否）
+  status: '0' | '1'           // 状态（0:正常 1:停用）
+  remark?: string             // 备注
+  createTime?: string         // 创建时间
+  updateTime?: string         // 更新时间
+}
+
+/**
+ * 字典数据搜索参数
+ */
+export interface DictDataSearchParams extends PageQuery {
+  dictType?: string           // 字典类型
+  dictLabel?: string          // 字典标签
+  status?: '0' | '1'          // 状态
+}
+
+/**
+ * 字典数据操作参数（新增/编辑）
+ */
+export interface DictDataOperateParams {
+  dictCode?: number           // 字典编码（编辑时必填）
+  dictType: string            // 字典类型
+  dictLabel: string           // 字典标签
+  dictValue: string           // 字典键值
+  dictSort: number            // 字典排序
+  listClass: string           // 表格回显样式
+  cssClass?: string           // CSS样式类名
+  isDefault?: 'Y' | 'N'       // 是否默认
+  status: '0' | '1'           // 状态
+  remark?: string             // 备注
+}
+
+/**
+ * 字典树形节点
+ */
+export interface DictTreeNode {
+  id: string                      // 唯一标识（字典类型: `type-${dictId}`, 字典数据: `data-${dictCode}`）
+  type: 'dict-type' | 'dict-data' // 节点类型
+  data: DictType | DictData       // 节点数据
+  children?: DictTreeNode[]       // 子节点（仅字典类型有子节点）
+  hasChildren?: boolean           // 是否有子节点
+}

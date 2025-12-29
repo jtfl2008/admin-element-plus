@@ -2,775 +2,502 @@
 
 ## 概述
 
-本文档描述字典管理模块的技术设计，包括组件架构、数据流、API 设计和实现细节。本项目使用 Vue 3 + TypeScript + Element Plus 技术栈，并封装了 DialogForm（对话框表单）、ConfigurableForm（可配置表单）、ConfigurableTable（可配置表格）等基础组件。
+本文档描述字典管理模块的技术设计，包括组件架构、数据流、API 设计和实现细节。字典管理是系统管理模块的核心功能之一，负责管理系统中的字典类型和字典数据。系统采用左右分栏布局，左侧展示字典类型列表，右侧展示选中字典类型下的字典数据。
 
-字典管理模块采用左右分栏布局，左侧为字典类型树，右侧为字典数据表格。该模块提供字典类型和字典数据的完整管理功能，包括增删改查、缓存刷新、数据导出等，是系统基础数据管理的核心模块之一。
+本项目使用 Vue 3 + TypeScript + Element Plus 技术栈，并封装了 ConfigurableTable（可配置表格）、ConfigurableForm（可配置表单）、DialogForm（对话框表单）等基础组件，确保与用户管理、角色管理、菜单管理等模块保持一致的用户体验。
 
-## 组件架构
+## 架构
+
+### 整体架构
+
+字典管理系统采用分层架构：
 
 ```
-src/views/system/dict/
-├── index.vue                           # 字典管理主页面（左右分栏布局）
-└── modules/
-    ├── dict-type-operate-drawer.vue    # 字典类型操作抽屉（待创建）
-    └── dict-data-operate-drawer.vue    # 字典数据操作抽屉（待创建）
-
-src/components/
-├── DialogForm/                         # 对话框表单组件（已有）
-├── ConfigurableForm/                   # 可配置表单组件（已有）
-├── ConfigurableTable/                  # 可配置表格组件（已有）
-└── StatusSwitch/                       # 状态切换组件（已有）
-
-src/service/api/system/
-├── dict.ts                             # 字典类型 API
-└── dict-data.ts                        # 字典数据 API
-
-src/utils/
-└── useTable.js                         # 表格工具 Hook（已有）
+┌─────────────────────────────────────────┐
+│         视图层 (View Layer)              │
+│  - 字典管理页面 (dict/index.vue)         │
+│  - DialogForm (字典操作对话框)           │
+└─────────────────────────────────────────┘
+                    ↓
+┌─────────────────────────────────────────┐
+│       组件层 (Component Layer)           │
+│  - ConfigurableTable (表格组件)         │
+│  - ConfigurableForm (表单组件)          │
+│  - StatusSwitch (状态开关)              │
+└─────────────────────────────────────────┘
+                    ↓
+┌─────────────────────────────────────────┐
+│         服务层 (Service Layer)           │
+│  - dict.ts (字典类型 API 服务)          │
+│  - dict-data.ts (字典数据 API 服务)     │
+│  - request.ts (HTTP 客户端)             │
+└─────────────────────────────────────────┘
+                    ↓
+┌─────────────────────────────────────────┐
+│         数据层 (Data Layer)              │
+│  - 类型定义 (system.d.ts)               │
+│  - 状态管理 (Pinia Store)               │
+└─────────────────────────────────────────┘
 ```
 
-## 页面布局设计
+### 数据流
 
-### 主页面布局 (index.vue)
+```
+用户操作 → 视图组件 → API 服务 → HTTP 请求 → 后端接口
+                ↓
+         更新本地状态
+                ↓
+         刷新视图显示
+```
 
-采用左右分栏布局，左侧字典类型树，右侧字典数据表格：
+## 组件和接口
+
+### 1. 字典管理主页面 (dict/index.vue)
+
+**职责：**
+- 以树形表格展示字典类型和字典数据的层级关系
+- 字典类型作为父节点，字典数据作为子节点
+- 提供搜索和筛选功能
+- 管理字典类型和字典数据的增删改查操作
+- 支持缓存刷新和数据导出
+- 支持展开/折叠节点
+
+**主要状态：**
+```typescript
+interface DictPageState {
+  // 树形数据（字典类型 + 字典数据）
+  dictTreeData: DictTreeNode[]
+  
+  // 搜索表单
+  searchForm: {
+    dictName?: string      // 字典名称
+    dictType?: string      // 字典类型
+    status?: string        // 状态
+  }
+  
+  // 操作对话框
+  dialogVisible: boolean
+  dialogType: 'add-type' | 'edit-type' | 'add-data' | 'edit-data'
+  dialogTitle: string
+  
+  // 当前操作的数据
+  currentDictType: DictType | null  // 当前操作的字典类型
+  editingData: DictType | DictData | null
+  
+  // 加载状态
+  loading: boolean
+  
+  // 展开状态
+  expandedKeys: string[]
+  isExpandAll: boolean
+}
+
+// 树形节点类型
+interface DictTreeNode {
+  id: string                    // 唯一标识
+  type: 'dict-type' | 'dict-data'  // 节点类型
+  data: DictType | DictData     // 节点数据
+  children?: DictTreeNode[]     // 子节点（字典类型的子节点是字典数据）
+}
+```
+
+**主要方法：**
+```typescript
+// 数据加载
+async loadDictTree(): Promise<void>
+buildDictTree(dictTypes: DictType[], dictDataMap: Map<string, DictData[]>): DictTreeNode[]
+
+// 搜索
+handleSearch(): void
+handleReset(): void
+
+// 字典类型操作
+handleAddDictType(): void
+handleEditDictType(dictType: DictType): void
+async handleDeleteDictType(dictType: DictType): Promise<void>
+
+// 字典数据操作
+handleAddDictData(parentDictType: DictType): void
+handleEditDictData(dictData: DictData): void
+async handleDeleteDictData(dictData: DictData): Promise<void>
+
+// 其他操作
+async handleRefreshCache(): Promise<void>
+async handleExport(): Promise<void>
+handleExpandAll(): void
+handleCollapseAll(): void
+
+// 刷新
+refresh(): void
+```
+
+### 2. 页面布局设计
+
+采用单栏树形表格布局：
 
 ```
 +------------------------------------------------------------------+
 |                         字典管理                                   |
 +------------------------------------------------------------------+
-|  +----------------+  +------------------------------------------+ |
-|  | 字典类型        |  |  ConfigurableForm (查询表单)              | |
-|  |                |  |  字典标签 [    ] 字典类型 [    ]          | |
-|  | [搜索框]       |  |  [查询] [重置]                            | |
-|  | [新增类型]     |  +------------------------------------------+ |
-|  | [刷新缓存]     |  |  ConfigurableTable (数据表格)             | |
-|  |                |  |  [新增] [批量删除] [导出] [刷新]          | |
-|  | ☑ 用户性别     |  +------------------------------------------+ |
-|  |   [编辑][删除] |  |  □ | 序号 | 标签 | 键值 | 排序 | 样式 | 状态 | 时间 | 操作 |
-|  | ☐ 菜单状态     |  |  □ |  1   | 男   |  0  |  1  | 蓝色 | [开关] | 2024 | [编辑][删除] |
-|  |   [编辑][删除] |  |  □ |  2   | 女   |  1  |  2  | 粉色 | [开关] | 2024 | [编辑][删除] |
-|  | ☐ 系统状态     |  +------------------------------------------+ |
-|  |   [编辑][删除] |  |  [分页组件]                                | |
-|  |                |  +------------------------------------------+ |
-|  +----------------+  |                                            |
+|  ConfigurableForm (查询表单)                                       |
+|  字典名称 [    ] 字典类型 [    ] 状态 [下拉] [查询] [重置]         |
++------------------------------------------------------------------+
+|  ConfigurableTable (树形表格)                                      |
+|  [新增字典类型] [刷新缓存] [导出] [展开/折叠] [刷新]                |
++------------------------------------------------------------------+
+|  名称/标签 | 类型/键值 | 排序 | 样式 | 状态 | 创建时间 | 操作      |
+|  ▼ 用户性别 (字典类型)                                             |
+|     dictType: sys_user_sex                                       |
+|     状态: [正常]  创建时间: 2024-01-01                             |
+|     [新增数据][编辑][删除]                                         |
+|    ├─ 男 (字典数据)                                               |
+|       键值: 0  排序: 1  样式: primary  状态: [正常]               |
+|       [编辑][删除]                                                |
+|    ├─ 女 (字典数据)                                               |
+|       键值: 1  排序: 2  样式: danger  状态: [正常]                |
+|       [编辑][删除]                                                |
+|    └─ 未知 (字典数据)                                             |
+|       键值: 2  排序: 3  样式: info  状态: [正常]                  |
+|       [编辑][删除]                                                |
+|  ▼ 菜单状态 (字典类型)                                             |
+|     dictType: sys_show_hide                                      |
+|     状态: [正常]  创建时间: 2024-01-01                             |
+|     [新增数据][编辑][删除]                                         |
+|    ├─ 显示 (字典数据)                                             |
+|    └─ 隐藏 (字典数据)                                             |
 +------------------------------------------------------------------+
 ```
 
+### 3. 树形表格 (ConfigurableTable)
 
-### 字典类型操作抽屉 (dict-type-operate-drawer.vue)
+**使用 ConfigurableTable 组件实现树形结构：**
 
-使用 DialogForm 组件实现新增/编辑字典类型：
-
-```
-+------------------------------------------------------------------+
-|  新增字典类型 / 编辑字典类型                              [×]       |
-+------------------------------------------------------------------+
-|  基础信息                                                          |
-|  +-------------------------------------------------------------+  |
-|  |  字典名称 [          ]    字典类型 [          ]              |  |
-|  |  状态 ○正常 ○停用                                           |  |
-|  |  备注 [                                                ]     |  |
-|  +-------------------------------------------------------------+  |
-|                                                                    |
-|                                    [取消]  [确定]                  |
-+------------------------------------------------------------------+
-```
-
-### 字典数据操作抽屉 (dict-data-operate-drawer.vue)
-
-使用 DialogForm 组件实现新增/编辑字典数据：
-
-```
-+------------------------------------------------------------------+
-|  新增字典数据 / 编辑字典数据                              [×]       |
-+------------------------------------------------------------------+
-|  基础信息                                                          |
-|  +-------------------------------------------------------------+  |
-|  |  字典类型 [          ] (自动填充，不可编辑)                   |  |
-|  |  字典标签 [          ]    字典键值 [          ]              |  |
-|  |  字典排序 [          ]    是否默认 ○是 ○否                   |  |
-|  |  回显样式 [下拉选择]      CSS样式 [          ]               |  |
-|  |  状态 ○正常 ○停用                                           |  |
-|  |  备注 [                                                ]     |  |
-|  +-------------------------------------------------------------+  |
-|                                                                    |
-|                                    [取消]  [确定]                  |
-+------------------------------------------------------------------+
-```
-
-## 组件设计
-
-### 1. 主页面组件 (index.vue)
-
-**职责：**
-- 管理左右分栏布局
-- 协调字典类型和字典数据的交互
-- 处理字典类型的选择和切换
-- 管理字典类型和字典数据的操作抽屉
-
-**主要状态：**
+**列配置示例：**
 ```typescript
-interface DictPageState {
-  // 字典类型相关
-  dictTypeList: DictType[]
-  selectedDictType: DictType | null
-  dictTypeSearchKeyword: string
-  dictTypeDrawerVisible: boolean
-  dictTypeOperateType: 'add' | 'edit'
-  
-  // 字典数据相关
-  dictDataList: DictData[]
-  dictDataTotal: number
-  dictDataPageNum: number
-  dictDataPageSize: number
-  dictDataDrawerVisible: boolean
-  dictDataOperateType: 'add' | 'edit'
-  
-  // 查询表单
-  queryForm: {
-    dictLabel: string
-    dictType: string
-  }
-}
-```
-
-
-**主要方法：**
-```typescript
-// 字典类型相关
-async getDictTypeList(): Promise<void>
-handleSelectDictType(dictType: DictType): void
-handleAddDictType(): void
-handleEditDictType(dictType: DictType): void
-async handleDeleteDictType(dictType: DictType): Promise<void>
-async handleRefreshCache(): Promise<void>
-handleSearchDictType(keyword: string): void
-
-// 字典数据相关
-async getDictDataList(): Promise<void>
-handleAddDictData(): void
-handleEditDictData(dictData: DictData): void
-async handleDeleteDictData(dictData: DictData): Promise<void>
-async handleBatchDeleteDictData(): Promise<void>
-handleQuery(): void
-handleReset(): void
-```
-
-### 2. 字典类型查询表单
-
-使用 el-input 实现简单的搜索框：
-
-```vue
-<el-input
-  v-model="dictTypeSearchKeyword"
-  placeholder="请输入字典名称"
-  clearable
-  @input="handleSearchDictType"
->
-  <template #prefix>
-    <el-icon><Search /></el-icon>
-  </template>
-</el-input>
-```
-
-### 3. 字典类型列表
-
-使用 el-scrollbar 和自定义列表项实现：
-
-```vue
-<el-scrollbar height="calc(100vh - 200px)">
-  <div
-    v-for="item in filteredDictTypeList"
-    :key="item.dictId"
-    class="dict-type-item"
-    :class="{ active: selectedDictType?.dictId === item.dictId }"
-    @click="handleSelectDictType(item)"
-  >
-    <div class="dict-type-info">
-      <div class="dict-name">{{ item.dictName }}</div>
-      <div class="dict-type">{{ item.dictType }}</div>
-    </div>
-    <div class="dict-type-actions">
-      <el-button
-        link
-        type="primary"
-        :icon="Edit"
-        @click.stop="handleEditDictType(item)"
-      />
-      <el-button
-        link
-        type="danger"
-        :icon="Delete"
-        @click.stop="handleDeleteDictType(item)"
-      />
-    </div>
-  </div>
-</el-scrollbar>
-```
-
-### 4. 字典数据查询表单 (ConfigurableForm)
-
-使用项目已有的 ConfigurableForm 组件：
-
-**配置示例:**
-```typescript
-const queryFields: FormFieldConfig[] = [
-  { prop: 'dictLabel', label: '字典标签', component: 'input', span: 8 },
-  { prop: 'dictType', label: '字典类型', component: 'input', span: 8, disabled: true }
-]
-```
-
-**使用方式:**
-```vue
-<ConfigurableForm
-  v-model="queryForm"
-  :fields="queryFields"
-  query
-  label-width="80px"
-  @on-query="handleQuery"
-  @on-reset="handleReset"
-/>
-```
-
-
-### 5. 字典数据表格 (ConfigurableTable)
-
-使用项目已有的 ConfigurableTable 组件：
-
-**列配置示例:**
-```typescript
-const tableColumns = computed(() => [
-  { prop: 'dictLabel', label: '字典标签', align: 'center' },
-  { prop: 'dictValue', label: '字典键值', align: 'center' },
-  { prop: 'dictSort', label: '字典排序', align: 'center' },
-  { 
-    prop: 'listClass', 
-    label: '回显样式', 
-    align: 'center',
-    cellSlot: 'listClass' // 使用插槽渲染标签样式
+const treeTableColumns = [
+  {
+    prop: 'name',
+    label: '名称/标签',
+    align: 'left',
+    width: 200,
+    cellSlot: 'name' // 自定义渲染，区分字典类型和字典数据
   },
-  { prop: 'cssClass', label: 'CSS样式', align: 'center' },
-  { 
-    prop: 'status', 
-    label: '状态', 
+  {
+    prop: 'typeOrValue',
+    label: '类型/键值',
     align: 'center',
-    cellSlot: 'status' // 使用插槽渲染状态开关
+    width: 150,
+    cellSlot: 'typeOrValue'
   },
-  { prop: 'createTime', label: '创建时间', align: 'center' },
+  {
+    prop: 'sort',
+    label: '排序',
+    align: 'center',
+    width: 80,
+    cellSlot: 'sort' // 仅字典数据显示
+  },
+  {
+    prop: 'listClass',
+    label: '样式',
+    align: 'center',
+    width: 100,
+    cellSlot: 'listClass' // 仅字典数据显示
+  },
+  {
+    prop: 'status',
+    label: '状态',
+    align: 'center',
+    width: 100,
+    cellSlot: 'status'
+  },
+  {
+    prop: 'createTime',
+    label: '创建时间',
+    align: 'center',
+    width: 180
+  },
   {
     label: '操作',
     align: 'center',
-    buttons: [
-      {
-        label: '编辑',
-        type: 'primary',
-        icon: Edit,
-        click: ({ row }) => handleEditDictData(row)
-      },
-      {
-        label: '删除',
-        type: 'danger',
-        icon: Delete,
-        click: ({ row }) => handleDeleteDictData(row)
-      }
-    ]
+    width: 250,
+    fixed: 'right',
+    cellSlot: 'actions' // 根据节点类型显示不同操作
   }
-])
+]
 ```
 
-**工具栏配置:**
+**工具栏配置：**
 ```typescript
-const toolbars = computed(() => [
-  { 
-    label: '新增', 
-    type: 'primary', 
+const toolbars = [
+  {
+    label: '新增字典类型',
+    type: 'primary',
     icon: Plus,
-    disabled: () => !selectedDictType.value,
-    click: () => handleAddDictData() 
+    click: () => handleAddDictType()
   },
-  { 
-    label: '批量删除', 
-    type: 'danger', 
-    icon: Delete,
-    disabled: () => selectedRows.value.length === 0,
-    click: () => handleBatchDeleteDictData() 
-  },
-  { 
-    label: '导出', 
-    type: 'warning', 
-    icon: Download,
-    disabled: () => !selectedDictType.value,
-    click: () => handleExportDictData() 
-  },
-  { 
-    label: '刷新', 
+  {
+    label: '刷新缓存',
+    type: 'warning',
     icon: Refresh,
-    click: () => refresh() 
+    click: () => handleRefreshCache()
+  },
+  {
+    label: '导出',
+    type: 'success',
+    icon: Download,
+    click: () => handleExport()
+  },
+  {
+    label: isExpandAll.value ? '折叠' : '展开',
+    icon: isExpandAll.value ? Fold : Expand,
+    click: () => handleToggleExpand()
+  },
+  {
+    label: '刷新',
+    icon: Refresh,
+    click: () => refresh()
   }
-])
+]
 ```
 
-**使用方式:**
+**使用方式：**
 ```vue
 <ConfigurableTable
-  :data="dictDataList"
-  :columns="tableColumns"
+  :data="dictTreeData"
+  :columns="treeTableColumns"
   :toolbars="toolbars"
-  :total="dictDataTotal"
-  v-model:pageNum="dictDataPageNum"
-  v-model:pageSize="dictDataPageSize"
-  selection
-  @current-change="handlePageChange"
-  @size-change="handleSizeChange"
-  @selection-change="handleSelectionChange"
+  :loading="loading"
+  row-key="id"
+  :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
+  :default-expand-all="isExpandAll"
 >
-  <!-- 回显样式列插槽 -->
+  <!-- 名称列插槽 -->
+  <template #name="{ row }">
+    <span v-if="row.type === 'dict-type'" class="dict-type-name">
+      {{ row.data.dictName }}
+    </span>
+    <span v-else class="dict-data-label">
+      {{ row.data.dictLabel }}
+    </span>
+  </template>
+  
+  <!-- 类型/键值列插槽 -->
+  <template #typeOrValue="{ row }">
+    <span v-if="row.type === 'dict-type'">
+      {{ row.data.dictType }}
+    </span>
+    <span v-else>
+      {{ row.data.dictValue }}
+    </span>
+  </template>
+  
+  <!-- 排序列插槽 -->
+  <template #sort="{ row }">
+    <span v-if="row.type === 'dict-data'">
+      {{ row.data.dictSort }}
+    </span>
+  </template>
+  
+  <!-- 样式列插槽 -->
   <template #listClass="{ row }">
-    <el-tag :type="row.listClass">
-      {{ row.dictLabel }}
+    <el-tag v-if="row.type === 'dict-data'" :type="row.data.listClass">
+      {{ row.data.listClass }}
     </el-tag>
   </template>
   
   <!-- 状态列插槽 -->
   <template #status="{ row }">
-    <StatusSwitch
-      v-model="row.status"
-      @change="handleStatusChange(row)"
-    />
+    <el-tag :type="row.data.status === '0' ? 'success' : 'danger'">
+      {{ row.data.status === '0' ? '正常' : '停用' }}
+    </el-tag>
+  </template>
+  
+  <!-- 操作列插槽 -->
+  <template #actions="{ row }">
+    <!-- 字典类型操作 -->
+    <template v-if="row.type === 'dict-type'">
+      <el-button link type="primary" @click="handleAddDictData(row.data)">
+        新增数据
+      </el-button>
+      <el-button link type="primary" @click="handleEditDictType(row.data)">
+        编辑
+      </el-button>
+      <el-button link type="danger" @click="handleDeleteDictType(row.data)">
+        删除
+      </el-button>
+    </template>
+    
+    <!-- 字典数据操作 -->
+    <template v-else>
+      <el-button link type="primary" @click="handleEditDictData(row.data)">
+        编辑
+      </el-button>
+      <el-button link type="danger" @click="handleDeleteDictData(row.data)">
+        删除
+      </el-button>
+    </template>
   </template>
 </ConfigurableTable>
 ```
 
+### 4. 搜索表单 (ConfigurableForm)
 
-### 6. 字典类型操作抽屉 (dict-type-operate-drawer.vue)
+**职责：**
+- 提供字典名称、字典类型和状态搜索
+- 支持重置搜索条件
+- 搜索结果在树形表格中展示
 
-使用 DialogForm 组件实现字典类型新增/编辑：
-
-**表单配置:**
+**配置示例：**
 ```typescript
-const dialogVisible = ref(false)
-const dialogTitle = ref('')
-const dialogType = ref<'add' | 'edit'>('add')
-const dialogLoading = ref(false)
+const queryFields: FormFieldConfig[] = [
+  {
+    prop: 'dictName',
+    label: '字典名称',
+    component: 'input',
+    span: 6,
+    placeholder: '请输入字典名称'
+  },
+  {
+    prop: 'dictType',
+    label: '字典类型',
+    component: 'input',
+    span: 6,
+    placeholder: '请输入字典类型'
+  },
+  {
+    prop: 'status',
+    label: '状态',
+    component: 'select',
+    span: 6,
+    placeholder: '请选择状态',
+    options: [
+      { label: '正常', value: '0' },
+      { label: '停用', value: '1' }
+    ]
+  }
+]
+```
 
-const dialogForm = ref<DictTypeOperateParams>({
+**使用方式：**
+```vue
+<ConfigurableForm
+  v-model="searchForm"
+  :fields="queryFields"
+  query
+  label-width="80px"
+  @on-query="handleSearch"
+  @on-reset="handleReset"
+/>
+```
+
+### 5. 字典类型操作对话框 (DialogForm)
+
+**使用 DialogForm 组件实现字典类型新增/编辑：**
+
+**表单配置：**
+```typescript
+const dictTypeDialogForm = ref<DictTypeOperateParams>({
   dictId: undefined,
   dictName: '',
   dictType: '',
-  status: '0',
   remark: ''
 })
 
-const dialogRules = {
-  dictName: [{ required: true, message: '请输入字典名称', trigger: 'blur' }],
-  dictType: [{ required: true, message: '请输入字典类型', trigger: 'blur' }],
-  status: [{ required: true, message: '请选择状态', trigger: 'change' }]
+const dictTypeDialogRules = {
+  dictName: [
+    { required: true, message: '请输入字典名称', trigger: 'blur' },
+    { min: 2, max: 50, message: '字典名称长度在 2 到 50 个字符', trigger: 'blur' }
+  ],
+  dictType: [
+    { required: true, message: '请输入字典类型', trigger: 'blur' },
+    { min: 2, max: 50, message: '字典类型长度在 2 到 50 个字符', trigger: 'blur' },
+    { pattern: /^[a-z_]+$/, message: '字典类型只能包含小写字母和下划线', trigger: 'blur' }
+  ]
 }
 
-const dialogSections = computed(() => [
+const dictTypeDialogSections = computed(() => [
   {
     type: 'form',
     key: 'baseInfo',
     title: '基础信息',
     fields: [
-      { 
-        prop: 'dictName', 
-        label: '字典名称', 
-        component: 'input', 
-        span: 12 
-      },
-      { 
-        prop: 'dictType', 
-        label: '字典类型', 
-        component: 'input', 
+      {
+        prop: 'dictName',
+        label: '字典名称',
+        component: 'input',
         span: 12,
-        disabled: () => dialogType.value === 'edit' // 编辑时禁用
+        placeholder: '请输入字典名称'
       },
-      { 
-        prop: 'status', 
-        label: '状态', 
-        component: 'radio-group', 
+      {
+        prop: 'dictType',
+        label: '字典类型',
+        component: 'input',
         span: 12,
-        options: [
-          { label: '正常', value: '0' },
-          { label: '停用', value: '1' }
-        ]
+        placeholder: '请输入字典类型',
+        disabled: () => dictTypeOperateType.value === 'edit' // 编辑时禁用
       },
-      { 
-        prop: 'remark', 
-        label: '备注', 
-        component: 'input', 
+      {
+        prop: 'remark',
+        label: '备注',
+        component: 'input',
         type: 'textarea',
-        span: 24 
+        span: 24,
+        placeholder: '请输入备注',
+        rows: 3
       }
     ]
   }
 ])
 ```
 
-**使用方式:**
+**使用方式：**
 ```vue
 <DialogForm
-  v-model="dialogVisible"
-  v-model:formData="dialogForm"
-  :title="dialogTitle"
-  :sections="dialogSections"
-  :rules="dialogRules"
-  :confirm-loading="dialogLoading"
-  @confirm="handleDialogConfirm"
-  @cancel="handleDialogCancel"
+  v-model="dictTypeDialogVisible"
+  v-model:formData="dictTypeDialogForm"
+  :title="dictTypeDialogTitle"
+  :sections="dictTypeDialogSections"
+  :rules="dictTypeDialogRules"
+  :confirm-loading="dictTypeDialogLoading"
+  @confirm="handleDictTypeDialogConfirm"
+  @cancel="handleDictTypeDialogCancel"
 />
 ```
 
-### 7. 字典数据操作抽屉 (dict-data-operate-drawer.vue)
+### 6. 字典数据操作对话框 (DialogForm)
 
-使用 DialogForm 组件实现字典数据新增/编辑：
+**使用 DialogForm 组件实现字典数据新增/编辑：**
 
-**表单配置:**
+**表单配置：**
 ```typescript
-const dialogVisible = ref(false)
-const dialogTitle = ref('')
-const dialogType = ref<'add' | 'edit'>('add')
-const dialogLoading = ref(false)
-
-const dialogForm = ref<DictDataOperateParams>({
+const dictDataDialogForm = ref<DictDataOperateParams>({
   dictCode: undefined,
-  dictSort: 0,
+  dictType: '',
   dictLabel: '',
   dictValue: '',
-  dictType: '',
-  cssClass: '',
+  dictSort: 0,
   listClass: 'default',
+  cssClass: '',
   isDefault: 'N',
   status: '0',
   remark: ''
 })
 
-const dialogRules = {
-  dictLabel: [{ required: true, message: '请输入字典标签', trigger: 'blur' }],
-  dictValue: [{ required: true, message: '请输入字典键值', trigger: 'blur' }],
-  dictSort: [{ required: true, message: '请输入字典排序', trigger: 'blur' }]
+const dictDataDialogRules = {
+  dictLabel: [
+    { required: true, message: '请输入字典标签', trigger: 'blur' },
+    { min: 1, max: 50, message: '字典标签长度在 1 到 50 个字符', trigger: 'blur' }
+  ],
+  dictValue: [
+    { required: true, message: '请输入字典键值', trigger: 'blur' },
+    { max: 100, message: '字典键值长度不能超过 100 个字符', trigger: 'blur' }
+  ],
+  dictSort: [
+    { required: true, message: '请输入字典排序', trigger: 'blur' },
+    { type: 'number', min: 0, message: '字典排序必须为非负整数', trigger: 'blur' }
+  ]
 }
 
-
-const listClassOptions = [
-  { label: 'Primary', value: 'primary' },
-  { label: 'Success', value: 'success' },
-  { label: 'Info', value: 'info' },
-  { label: 'Warning', value: 'warning' },
-  { label: 'Error', value: 'error' },
-  { label: 'Default', value: 'default' }
-]
-
-const dialogSections = computed(() => [
-  {
-    type: 'form',
-    key: 'baseInfo',
-    title: '基础信息',
-    fields: [
-      { 
-        prop: 'dictType', 
-        label: '字典类型', 
-        component: 'input', 
-        span: 12,
-        disabled: true // 自动填充，不可编辑
-      },
-      { 
-        prop: 'dictLabel', 
-        label: '字典标签', 
-        component: 'input', 
-        span: 12 
-      },
-      { 
-        prop: 'dictValue', 
-        label: '字典键值', 
-        component: 'input', 
-        span: 12 
-      },
-      { 
-        prop: 'dictSort', 
-        label: '字典排序', 
-        component: 'input-number', 
-        span: 12 
-      },
-      { 
-        prop: 'listClass', 
-        label: '回显样式', 
-        component: 'select', 
-        span: 12,
-        options: listClassOptions
-      },
-      { 
-        prop: 'cssClass', 
-        label: 'CSS样式', 
-        component: 'input', 
-        span: 12 
-      },
-      { 
-        prop: 'isDefault', 
-        label: '是否默认', 
-        component: 'radio-group', 
-        span: 12,
-        options: [
-          { label: '是', value: 'Y' },
-          { label: '否', value: 'N' }
-        ]
-      },
-      { 
-        prop: 'status', 
-        label: '状态', 
-        component: 'radio-group', 
-        span: 12,
-        options: [
-          { label: '正常', value: '0' },
-          { label: '停用', value: '1' }
-        ]
-      },
-      { 
-        prop: 'remark', 
-        label: '备注', 
-        component: 'input', 
-        type: 'textarea',
-        span: 24 
-      }
-    ]
-  }
-])
-```
-
-**使用方式:**
-```vue
-<DialogForm
-  v-model="dialogVisible"
-  v-model:formData="dialogForm"
-  :title="dialogTitle"
-  :sections="dialogSections"
-  :rules="dialogRules"
-  :confirm-loading="dialogLoading"
-  @confirm="handleDialogConfirm"
-  @cancel="handleDialogCancel"
-/>
-```
-
-## 数据流设计
-
-### 字典类型数据流
-
-```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────┐
-│  字典类型列表    │────>│   index.vue     │────>│  API Layer  │
-│  (左侧面板)      │     │  (状态管理)      │     │  (请求后端)  │
-└─────────────────┘     └─────────────────┘     └─────────────┘
-                               │
-                               ▼
-                    ┌──────────────────┐
-                    │  字典数据表格     │
-                    │  (右侧面板)       │
-                    └──────────────────┘
-```
-
-### 字典数据数据流
-
-```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────┐
-│ ConfigurableForm│────>│   index.vue     │────>│  API Layer  │
-│   (查询表单)     │     │  (状态管理)      │     │  (请求后端)  │
-└─────────────────┘     └─────────────────┘     └─────────────┘
-                               │
-                               ▼
-                    ┌──────────────────┐
-                    │ConfigurableTable │
-                    │   (数据展示)      │
-                    └──────────────────┘
-```
-
-
-### 字典操作数据流
-
-```
-┌─────────────┐     ┌─────────────────┐     ┌─────────────┐
-│  操作按钮    │────>│   DialogForm    │────>│  API Layer  │
-│  (触发操作)  │     │  (表单处理)      │     │  (提交数据)  │
-└─────────────┘     └─────────────────┘     └─────────────┘
-                                                   │
-                                                   ▼
-                                            ┌─────────────┐
-                                            │  刷新列表    │
-                                            └─────────────┘
-```
-
-### useTable 工具使用
-
-项目已有 `useTable.js` 工具，封装了常用的表格逻辑：
-
-```javascript
-const {
-  queryForm,       // 查询表单数据
-  data,            // 表格数据
-  total,           // 总条数
-  pageNum,         // 当前页码
-  pageSize,        // 每页条数
-  onQuery,         // 查询方法
-  onReset,         // 重置方法
-  onCurrentChange, // 页码变化
-  onSizeChange,    // 每页条数变化
-  refresh          // 刷新数据
-} = useTable({ 
-  getTableData,    // 获取数据的方法
-  immediate: false // 不立即加载，等待选择字典类型
-})
-```
-
-## API 设计
-
-### 字典类型接口 (src/service/api/system/dict.ts)
-
-```typescript
-// 获取字典类型选择框列表
-export function fetchGetDictTypeOptionSelect() {
-  return request.get<DictType[]>('/system/dict/type/optionselect')
-}
-
-// 获取字典类型列表（分页）
-export function fetchGetDictTypeList(params?: DictTypeSearchParams) {
-  return request.get<PageResult<DictType>>('/system/dict/type/list', { params })
-}
-
-// 新增字典类型
-export function fetchCreateDictType(data: DictTypeOperateParams) {
-  return request.post('/system/dict/type', data)
-}
-
-// 更新字典类型
-export function fetchUpdateDictType(data: DictTypeOperateParams) {
-  return request.put('/system/dict/type', data)
-}
-
-// 批量删除字典类型
-export function fetchBatchDeleteDictType(dictIds: number[]) {
-  return request.delete(`/system/dict/type/${dictIds.join(',')}`)
-}
-
-// 刷新字典缓存
-export function fetchRefreshDictCache() {
-  return request.delete('/system/dict/type/refreshCache')
-}
-
-// 导出字典类型
-export function fetchExportDictType(params?: DictTypeSearchParams) {
-  return request.download('/system/dict/type/export', { params })
-}
-```
-
-### 字典数据接口 (src/service/api/system/dict-data.ts)
-
-```typescript
-// 根据字典类型查询字典数据信息
-export function fetchGetDictDataByType(dictType: string) {
-  return request.get<DictData[]>(`/system/dict/data/type/${dictType}`)
-}
-
-// 获取字典数据列表（分页）
-export function fetchGetDictDataList(params?: DictDataSearchParams) {
-  return request.get<PageResult<DictData>>('/system/dict/data/list', { params })
-}
-
-// 新增字典数据
-export function fetchCreateDictData(data: DictDataOperateParams) {
-  return request.post('/system/dict/data', data)
-}
-
-// 更新字典数据
-export function fetchUpdateDictData(data: DictDataOperateParams) {
-  return request.put('/system/dict/data', data)
-}
-
-// 批量删除字典数据
-export function fetchBatchDeleteDictData(dictCodes: number[]) {
-  return request.delete(`/system/dict/data/${dictCodes.join(',')}`)
-}
-
-// 导出字典数据
-export function fetchExportDictData(params?: DictDataSearchParams) {
-  return request.download('/system/dict/data/export', { params })
-}
-```
-
-
-## 数据模型
-
-### 字典类型相关类型 (src/typings/api/system.d.ts)
-
-```typescript
-declare namespace Api.System {
-  // 字典类型搜索参数
-  interface DictTypeSearchParams extends PageParams {
-    dictName?: string
-    dictType?: string
-    status?: string
-  }
-
-  // 字典类型列表项
-  interface DictType {
-    dictId: number
-    dictName: string
-    dictType: string
-    status: string
-    createTime?: string
-    remark?: string
-  }
-
-  // 字典类型操作参数
-  interface DictTypeOperateParams {
-    dictId?: number
-    dictName: string
-    dictType: string
-    status: string
-    remark?: string
-  }
-
-  // 字典数据搜索参数
-  interface DictDataSearchParams extends PageParams {
-    dictLabel?: string
-    dictType?: string
-    status?: string
-  }
-
-  // 字典数据列表项
-  interface DictData {
-    dictCode: number
-    dictSort: number
-    dictLabel: string
-    dictValue: string
-    dictType: string
-    cssClass?: string
-    listClass: NaiveUI.ThemeColor
-    isDefault: string
-    status: string
-    createTime?: string
-    remark?: string
-  }
-
-  // 字典数据操作参数
-  interface DictDataOperateParams {
-    dictCode?: number
-    dictSort: number
-    dictLabel: string
-    dictValue: string
-    dictType: string
-    cssClass?: string
-    listClass?: string
-    isDefault?: string
-    status: string
-    remark?: string
-  }
-}
-```
-
-## 回显样式映射
-
-```typescript
 // 回显样式选项
 const listClassOptions = [
   { label: 'Primary', value: 'primary' },
@@ -781,117 +508,505 @@ const listClassOptions = [
   { label: 'Default', value: 'default' }
 ]
 
-// 回显样式类型映射
-type ListClassType = 'primary' | 'success' | 'info' | 'warning' | 'error' | 'default'
+const dictDataDialogSections = computed(() => [
+  {
+    type: 'form',
+    key: 'baseInfo',
+    title: '基础信息',
+    fields: [
+      {
+        prop: 'dictType',
+        label: '字典类型',
+        component: 'input',
+        span: 12,
+        disabled: true // 自动填充，不可编辑
+      },
+      {
+        prop: 'dictLabel',
+        label: '字典标签',
+        component: 'input',
+        span: 12,
+        placeholder: '请输入字典标签'
+      },
+      {
+        prop: 'dictValue',
+        label: '字典键值',
+        component: 'input',
+        span: 12,
+        placeholder: '请输入字典键值'
+      },
+      {
+        prop: 'dictSort',
+        label: '字典排序',
+        component: 'input-number',
+        span: 12,
+        min: 0,
+        placeholder: '请输入字典排序'
+      },
+      {
+        prop: 'listClass',
+        label: '回显样式',
+        component: 'select',
+        span: 12,
+        options: listClassOptions,
+        placeholder: '请选择回显样式'
+      },
+      {
+        prop: 'cssClass',
+        label: 'CSS样式',
+        component: 'input',
+        span: 12,
+        placeholder: '请输入CSS样式类名'
+      },
+      {
+        prop: 'status',
+        label: '状态',
+        component: 'radio-group',
+        span: 12,
+        options: [
+          { label: '正常', value: '0' },
+          { label: '停用', value: '1' }
+        ]
+      },
+      {
+        prop: 'isDefault',
+        label: '是否默认',
+        component: 'radio-group',
+        span: 12,
+        options: [
+          { label: '是', value: 'Y' },
+          { label: '否', value: 'N' }
+        ]
+      },
+      {
+        prop: 'remark',
+        label: '备注',
+        component: 'input',
+        type: 'textarea',
+        span: 24,
+        placeholder: '请输入备注',
+        rows: 3
+      }
+    ]
+  }
+])
 ```
 
+**使用方式：**
+```vue
+<DialogForm
+  v-model="dictDataDialogVisible"
+  v-model:formData="dictDataDialogForm"
+  :title="dictDataDialogTitle"
+  :sections="dictDataDialogSections"
+  :rules="dictDataDialogRules"
+  :confirm-loading="dictDataDialogLoading"
+  @confirm="handleDictDataDialogConfirm"
+  @cancel="handleDictDataDialogCancel"
+/>
+```
+
+## 数据模型
+
+### 树形节点 (DictTreeNode)
+
+```typescript
+interface DictTreeNode {
+  id: string                      // 唯一标识（字典类型: `type-${dictId}`, 字典数据: `data-${dictCode}`）
+  type: 'dict-type' | 'dict-data' // 节点类型
+  data: DictType | DictData       // 节点数据
+  children?: DictTreeNode[]       // 子节点（仅字典类型有子节点）
+  hasChildren?: boolean           // 是否有子节点
+}
+```
+
+### 字典类型实体 (DictType)
+
+```typescript
+interface DictType {
+  dictId: number              // 字典主键
+  dictName: string            // 字典名称
+  dictType: string            // 字典类型
+  status: '0' | '1'           // 状态（0:正常 1:停用）
+  remark?: string             // 备注
+  createTime?: string         // 创建时间
+  updateTime?: string         // 更新时间
+}
+```
+
+### 字典类型搜索参数 (DictTypeSearchParams)
+
+```typescript
+interface DictTypeSearchParams extends PageQuery {
+  dictName?: string           // 字典名称
+  dictType?: string           // 字典类型
+  status?: '0' | '1'          // 状态
+}
+```
+
+### 字典类型操作参数 (DictTypeOperateParams)
+
+```typescript
+interface DictTypeOperateParams {
+  dictId?: number             // 字典主键（编辑时必填）
+  dictName: string            // 字典名称
+  dictType: string            // 字典类型
+  remark?: string             // 备注
+}
+```
+
+### 字典数据实体 (DictData)
+
+```typescript
+interface DictData {
+  dictCode: number            // 字典编码
+  dictType: string            // 字典类型
+  dictLabel: string           // 字典标签
+  dictValue: string           // 字典键值
+  dictSort: number            // 字典排序
+  listClass: string           // 表格回显样式
+  cssClass?: string           // CSS样式类名
+  isDefault: 'Y' | 'N'        // 是否默认（Y:是 N:否）
+  status: '0' | '1'           // 状态（0:正常 1:停用）
+  remark?: string             // 备注
+  createTime?: string         // 创建时间
+  updateTime?: string         // 更新时间
+}
+```
+
+### 字典数据搜索参数 (DictDataSearchParams)
+
+```typescript
+interface DictDataSearchParams extends PageQuery {
+  dictType?: string           // 字典类型
+  dictLabel?: string          // 字典标签
+  status?: '0' | '1'          // 状态
+}
+```
+
+### 字典数据操作参数 (DictDataOperateParams)
+
+```typescript
+interface DictDataOperateParams {
+  dictCode?: number           // 字典编码（编辑时必填）
+  dictType: string            // 字典类型
+  dictLabel: string           // 字典标签
+  dictValue: string           // 字典键值
+  dictSort: number            // 字典排序
+  listClass: string           // 表格回显样式
+  cssClass?: string           // CSS样式类名
+  isDefault?: 'Y' | 'N'       // 是否默认
+  status: '0' | '1'           // 状态
+  remark?: string             // 备注
+}
+```
+
+## API 设计
+
+### 数据加载策略
+
+由于使用树形表格结构，需要同时加载字典类型和字典数据：
+
+```typescript
+/**
+ * 加载完整的字典树数据
+ */
+async function loadDictTree(): Promise<DictTreeNode[]> {
+  try {
+    // 1. 获取所有字典类型
+    const dictTypes = await fetchGetDictTypeList()
+    
+    // 2. 获取所有字典数据
+    const allDictData: DictData[] = []
+    for (const dictType of dictTypes.rows) {
+      const dictData = await fetchGetDictDataByType(dictType.dictType)
+      allDictData.push(...dictData)
+    }
+    
+    // 3. 构建字典数据映射表
+    const dictDataMap = new Map<string, DictData[]>()
+    allDictData.forEach(data => {
+      if (!dictDataMap.has(data.dictType)) {
+        dictDataMap.set(data.dictType, [])
+      }
+      dictDataMap.get(data.dictType)!.push(data)
+    })
+    
+    // 4. 构建树形结构
+    return buildDictTree(dictTypes.rows, dictDataMap)
+  } catch (error) {
+    console.error('加载字典树失败:', error)
+    throw error
+  }
+}
+
+/**
+ * 构建字典树形结构
+ */
+function buildDictTree(
+  dictTypes: DictType[], 
+  dictDataMap: Map<string, DictData[]>
+): DictTreeNode[] {
+  return dictTypes.map(dictType => {
+    const dictDataList = dictDataMap.get(dictType.dictType) || []
+    
+    // 按排序值排序字典数据
+    const sortedDictData = dictDataList.sort((a, b) => {
+      if (a.dictSort !== b.dictSort) {
+        return a.dictSort - b.dictSort
+      }
+      return new Date(a.createTime).getTime() - new Date(b.createTime).getTime()
+    })
+    
+    return {
+      id: `type-${dictType.dictId}`,
+      type: 'dict-type',
+      data: dictType,
+      children: sortedDictData.map(dictData => ({
+        id: `data-${dictData.dictCode}`,
+        type: 'dict-data',
+        data: dictData
+      })),
+      hasChildren: sortedDictData.length > 0
+    }
+  })
+}
+```
+
+### 字典类型 API (src/service/api/system/dict.ts)
+
+```typescript
+/**
+ * 获取字典类型选择框列表
+ */
+export function fetchGetDictTypeOptionSelect(): Promise<DictType[]> {
+  return httpClient.get('/system/dict/type/optionselect')
+}
+
+/**
+ * 获取字典类型列表（分页）
+ */
+export function fetchGetDictTypeList(params?: DictTypeSearchParams): Promise<PageResponse<DictType>> {
+  return httpClient.get('/system/dict/type/list', { params })
+}
+
+/**
+ * 新增字典类型
+ */
+export function fetchCreateDictType(data: DictTypeOperateParams): Promise<void> {
+  return httpClient.post('/system/dict/type', data)
+}
+
+/**
+ * 更新字典类型
+ */
+export function fetchUpdateDictType(data: DictTypeOperateParams): Promise<void> {
+  return httpClient.put('/system/dict/type', data)
+}
+
+/**
+ * 批量删除字典类型
+ */
+export function fetchBatchDeleteDictType(dictIds: number[]): Promise<void> {
+  return httpClient.delete(`/system/dict/type/${dictIds.join(',')}`)
+}
+
+/**
+ * 刷新字典缓存
+ */
+export function fetchRefreshDictCache(): Promise<void> {
+  return httpClient.delete('/system/dict/type/refreshCache')
+}
+
+/**
+ * 导出字典类型
+ */
+export function fetchExportDictType(params?: DictTypeSearchParams): Promise<Blob> {
+  return httpClient.get('/system/dict/type/export', { 
+    params,
+    responseType: 'blob'
+  })
+}
+```
+
+### 字典数据 API (src/service/api/system/dict-data.ts)
+
+```typescript
+/**
+ * 根据字典类型查询字典数据信息
+ */
+export function fetchGetDictDataByType(dictType: string): Promise<DictData[]> {
+  return httpClient.get(`/system/dict/data/type/${dictType}`)
+}
+
+/**
+ * 获取字典数据列表（分页）
+ */
+export function fetchGetDictDataList(params?: DictDataSearchParams): Promise<PageResponse<DictData>> {
+  return httpClient.get('/system/dict/data/list', { params })
+}
+
+/**
+ * 新增字典数据
+ */
+export function fetchCreateDictData(data: DictDataOperateParams): Promise<void> {
+  return httpClient.post('/system/dict/data', data)
+}
+
+/**
+ * 更新字典数据
+ */
+export function fetchUpdateDictData(data: DictDataOperateParams): Promise<void> {
+  return httpClient.put('/system/dict/data', data)
+}
+
+/**
+ * 批量删除字典数据
+ */
+export function fetchBatchDeleteDictData(dictCodes: number[]): Promise<void> {
+  return httpClient.delete(`/system/dict/data/${dictCodes.join(',')}`)
+}
+
+/**
+ * 导出字典数据
+ */
+export function fetchExportDictData(params?: DictDataSearchParams): Promise<Blob> {
+  return httpClient.get('/system/dict/data/export', { 
+    params,
+    responseType: 'blob'
+  })
+}
+```
 
 ## 正确性属性
 
 *属性是一个特征或行为，应该在系统的所有有效执行中保持为真——本质上是关于系统应该做什么的正式声明。属性作为人类可读规范和机器可验证正确性保证之间的桥梁。*
 
-### 属性 1：搜索结果匹配
+### 搜索和筛选属性
 
-*对于任意*搜索关键词和数据列表（字典类型或字典数据），返回的所有结果都应该在相应字段（字典名称/字典类型/字典标签）中包含该关键词。
+**属性 1: 字典类型搜索结果匹配**
+*对于任意* 搜索关键词，返回的所有字典类型的字典名称或字典类型字段都应该包含该搜索关键词
+**验证需求: 1.2**
 
-**验证：需求 1.2, 7.2**
+**属性 2: 字典数据搜索结果匹配**
+*对于任意* 字典标签搜索词，返回的所有字典数据的字典标签都应该包含该搜索词
+**验证需求: 7.2**
 
-### 属性 2：列表字段完整性
+### 表单验证属性
 
-*对于任意*列表项（字典类型或字典数据），渲染后的内容应该包含所有必需的显示字段。
+**属性 3: 必填字段验证**
+*对于任意* 缺少必填字段的表单数据（字典类型的dictName/dictType，或字典数据的dictLabel/dictValue/dictSort），提交时应该被拒绝并显示验证错误
+**验证需求: 2.2, 3.2, 8.3, 9.2**
 
-**验证：需求 1.3, 7.3**
+**属性 4: 空白字符验证**
+*对于任意* 仅包含空白字符的必填字段，提交时应该被拒绝并显示验证错误信息
+**验证需求: 2.3, 8.4**
 
-### 属性 3：必填字段验证
+**属性 5: 排序值类型验证**
+*对于任意* 非数字类型的排序值输入，验证应该失败并提示错误
+**验证需求: 13.2**
 
-*对于任意*表单提交（字典类型或字典数据），如果任何必填字段为空或仅包含空白字符，则验证应该失败且不应该提交表单。
+### CRUD 操作属性
 
-**验证：需求 2.2, 2.3, 3.2, 8.3, 8.4, 9.2**
+**属性 6: 字典类型创建后可查询**
+*对于任意* 有效的字典类型数据，创建成功后应该能在字典类型列表中查询到该字典类型
+**验证需求: 2.4**
 
-### 属性 4：创建后可查询
+**属性 7: 字典类型编辑数据填充一致性**
+*对于任意* 字典类型，点击编辑按钮后，表单中填充的数据应该与该字典类型的所有字段值完全一致
+**验证需求: 3.1**
 
-*对于任意*有效的数据（字典类型或字典数据），创建成功后应该能在相应列表中查询到该数据。
+**属性 8: 字典类型更新后数据变更**
+*对于任意* 有效的字典类型修改，提交成功后，字典类型列表中该字典类型的数据应该反映最新的修改
+**验证需求: 3.3**
 
-**验证：需求 2.4, 8.5**
+**属性 9: 字典类型删除后不可查询**
+*对于任意* 字典类型，删除成功后，该字典类型不应该再出现在字典类型列表中
+**验证需求: 4.2, 4.3**
 
-### 属性 5：编辑数据一致性
+**属性 10: 字典数据创建后可查询**
+*对于任意* 有效的字典数据，创建成功后应该能在对应字典类型的字典数据列表中查询到该字典数据
+**验证需求: 8.5**
 
-*对于任意*数据项（字典类型或字典数据），点击编辑时，表单中填充的数据应该与该数据项的所有字段值完全一致。
+**属性 11: 字典数据编辑数据填充一致性**
+*对于任意* 字典数据，点击编辑按钮后，表单中填充的数据应该与该字典数据的所有字段值完全一致
+**验证需求: 9.1**
 
-**验证：需求 3.1, 9.1**
+**属性 12: 字典数据更新后数据变更**
+*对于任意* 有效的字典数据修改，提交成功后，字典数据列表中该字典数据应该反映最新的修改
+**验证需求: 9.3**
 
-### 属性 6：更新后数据变更
+**属性 13: 批量删除后所有字典数据不可查询**
+*对于任意* 选中的字典数据集合，批量删除成功后，这些字典数据都不应该再出现在字典数据列表中
+**验证需求: 10.3, 10.4**
 
-*对于任意*有效的数据修改（字典类型或字典数据），提交成功后，列表中该数据应该反映最新的修改。
+### 字典类型选择和数据加载属性
 
-**验证：需求 3.3, 9.3**
+**属性 14: 树形结构正确性**
+*对于任意* 字典类型和字典数据集合，构建的树形结构应该满足：字典类型作为父节点，其对应的字典数据作为子节点
+**验证需求: 7.1**
 
-### 属性 7：删除后不可查询
+**属性 15: 新增字典数据时自动填充字典类型**
+*对于任意* 字典类型节点，点击"新增数据"按钮时，表单中的字典类型字段应该自动填充为该字典类型且不可编辑
+**验证需求: 8.2**
 
-*对于任意*数据项（字典类型或字典数据），删除成功后，该数据不应该再出现在相应列表中。
+### 列表显示属性
 
-**验证：需求 4.2, 10.3**
+**属性 16: 字典类型列表字段完整性**
+*对于任意* 字典类型列表，渲染后应该包含字典名称、字典类型、状态、备注和创建时间等所有必需字段
+**验证需求: 1.3**
 
-### 属性 8：字典数据类型关联
+**属性 17: 字典数据列表字段完整性**
+*对于任意* 字典数据列表，渲染后应该包含字典标签、字典键值、字典排序、是否默认、标签样式、CSS样式、状态、备注和创建时间等所有必需字段
+**验证需求: 7.3**
 
-*对于任意*选中的字典类型，右侧显示的字典数据列表应该只包含 dictType 字段等于该字典类型的数据项。
+### 样式和排序属性
 
-**验证：需求 7.1**
+**属性 18: 回显样式正确显示**
+*对于任意* 设置了回显样式的字典数据，在列表中应该按照选定的样式（primary/success/info/warning/error/default）显示字典标签
+**验证需求: 12.3**
 
-### 属性 9：字典类型自动填充
+**属性 19: 字典数据排序正确性**
+*对于任意* 字典数据列表，显示时应该按照字典排序值（dictSort）升序排列
+**验证需求: 13.3**
 
-*对于任意*选中的字典类型，新增字典数据时，表单中的字典类型字段应该自动填充为该字典类型且不可编辑。
+**属性 20: 相同排序值按创建时间排序**
+*对于任意* 排序值相同的字典数据，应该按照创建时间进行排序
+**验证需求: 13.4**
 
-**验证：需求 8.2**
+### 状态管理属性
 
-### 属性 10：批量删除按钮状态
+**属性 21: 状态过滤正确性**
+*对于任意* 字典数据，当状态为启用时应该在字典选择器中显示，当状态为禁用时应该在字典选择器中隐藏
+**验证需求: 14.2, 14.3**
 
-*对于任意*表格选择状态，当且仅当选中一个或多个数据项时，批量删除按钮应该被启用。
+**属性 22: 状态显示样式区分**
+*对于任意* 字典数据，列表中应该以不同的样式标识启用和禁用状态
+**验证需求: 14.4**
 
-**验证：需求 10.1, 10.7**
+### 按钮状态属性
 
-### 属性 11：回显样式选项完整性
+**属性 23: 新增数据按钮位置正确性**
+*对于任意* 字典类型节点，操作列应该显示"新增数据"按钮
+**验证需求: 7.5**
 
-*对于任意*回显样式选择器，应该包含且仅包含以下样式选项：primary、success、info、warning、error、default。
+### API 接口属性
 
-**验证：需求 12.2**
+**属性 24: 字典类型选择器接口返回格式**
+*对于任意* 字典类型选择器接口调用，应该返回包含所有字典类型的数组
+**验证需求: 15.2**
 
-### 属性 12：回显样式应用一致性
+**属性 25: 字典类型选择器数据一致性**
+*对于任意* 字典类型数据变更，选择器接口应该返回最新的字典类型数据
+**验证需求: 15.3**
 
-*对于任意*字典数据，保存时选择的回显样式应该与列表中显示的标签样式完全一致。
+**属性 26: 根据类型查询字典数据过滤正确性**
+*对于任意* 字典类型，调用查询接口时应该返回该类型下所有启用状态的字典数据
+**验证需求: 16.2**
 
-**验证：需求 12.3**
-
-### 属性 13：排序值类型验证
-
-*对于任意*输入的排序值，如果不是有效的数字类型，则验证应该失败。
-
-**验证：需求 13.2**
-
-### 属性 14：字典数据排序正确性
-
-*对于任意*字典数据列表，渲染后的顺序应该按照 dictSort 升序排列；当 dictSort 相同时，应该按照 createTime 排序。
-
-**验证：需求 13.3, 13.4**
-
-### 属性 15：状态过滤规则
-
-*对于任意*字典数据，当且仅当其状态为启用（status='0'）时，该数据应该出现在系统其他模块的字典选择器中。
-
-**验证：需求 14.2, 14.3**
-
-### 属性 16：数据变更后接口一致性
-
-*对于任意*数据变更操作（新增、修改、删除），相关查询接口应该立即返回反映最新状态的数据。
-
-**验证：需求 15.3, 16.4**
-
-### 属性 17：字典数据类型过滤
-
-*对于任意*字典类型，调用根据类型查询字典数据的接口时，返回的所有数据都应该满足：dictType 等于该字典类型且 status 为启用状态。
-
-**验证：需求 16.2**
-
+**属性 27: 字典数据查询接口数据一致性**
+*对于任意* 字典数据变更，查询接口应该返回最新的字典数据
+**验证需求: 16.4**
 
 ## 错误处理
 
@@ -902,7 +1017,8 @@ type ListClassType = 'primary' | 'success' | 'info' | 'warning' | 'error' | 'def
 ```typescript
 try {
   const response = await fetchGetDictTypeList(params)
-  // 处理成功响应
+  dictTypeList.value = response.rows
+  dictTypeTotal.value = response.total
 } catch (error) {
   console.error('获取字典类型列表失败:', error)
   ElMessage.error('获取字典类型列表失败，请稍后重试')
@@ -932,29 +1048,22 @@ const validateForm = async () => {
 
 特定业务场景的错误处理：
 
-**未选择字典类型时新增字典数据：**
+**删除包含字典数据的字典类型：**
 ```typescript
-if (!selectedDictType.value) {
-  ElMessage.warning('请先选择字典类型')
+if (dictType.children && dictType.children.length > 0) {
+  ElMessage.warning('该字典类型下存在字典数据，请先删除字典数据')
   return
 }
 ```
 
-**字典类型编辑时禁止修改字典类型字段：**
+**字典类型已被使用无法删除：**
 ```typescript
-// 在表单配置中设置 disabled
-{ 
-  prop: 'dictType', 
-  label: '字典类型', 
-  component: 'input', 
-  disabled: () => dialogType.value === 'edit'
-}
-```
-
-**空白字符验证：**
-```typescript
-const validateNotEmpty = (value: string): boolean => {
-  return value && value.trim().length > 0
+catch (error) {
+  if (error.code === 'DICT_TYPE_IN_USE') {
+    ElMessage.error('该字典类型正在使用中，无法删除')
+  } else {
+    ElMessage.error('删除失败，请稍后重试')
+  }
 }
 ```
 
@@ -989,27 +1098,76 @@ httpClient.interceptors.response.use(
 - **属性测试**：验证跨所有输入的通用属性
 - 两者互补，共同确保全面覆盖
 
-### 单元测试平衡
+### 单元测试
 
-- 单元测试有助于特定示例和边缘情况
-- 避免编写过多单元测试 - 基于属性的测试处理大量输入覆盖
-- 单元测试应专注于：
-  - 演示正确行为的特定示例
-  - 组件之间的集成点
-  - 边缘情况和错误条件
-- 属性测试应专注于：
-  - 对所有输入都成立的通用属性
-  - 通过随机化实现全面的输入覆盖
+单元测试专注于：
+- 特定示例，演示正确行为
+- 组件之间的集成点
+- 边缘情况和错误条件
+
+**示例：**
+```typescript
+describe('DictManagement', () => {
+  it('应该在点击新增字典类型按钮时打开对话框', () => {
+    const wrapper = mount(DictIndex)
+    
+    wrapper.find('[data-test="add-dict-type-btn"]').trigger('click')
+    
+    expect(wrapper.vm.dialogVisible).toBe(true)
+    expect(wrapper.vm.dialogType).toBe('add-type')
+  })
+  
+  it('应该正确构建树形结构', () => {
+    const dictTypes = [
+      { dictId: 1, dictName: '用户性别', dictType: 'sys_user_sex' }
+    ]
+    const dictDataMap = new Map([
+      ['sys_user_sex', [
+        { dictCode: 1, dictLabel: '男', dictValue: '0', dictSort: 1, dictType: 'sys_user_sex' },
+        { dictCode: 2, dictLabel: '女', dictValue: '1', dictSort: 2, dictType: 'sys_user_sex' }
+      ]]
+    ])
+    
+    const tree = buildDictTree(dictTypes, dictDataMap)
+    
+    expect(tree).toHaveLength(1)
+    expect(tree[0].type).toBe('dict-type')
+    expect(tree[0].children).toHaveLength(2)
+    expect(tree[0].children[0].type).toBe('dict-data')
+  })
+  
+  it('应该验证字典类型格式', () => {
+    const result1 = validateDictTypeForm({ dictType: 'user_sex' })
+    expect(result1.valid).toBe(true)
+    
+    const result2 = validateDictTypeForm({ dictType: 'UserSex' })
+    expect(result2.valid).toBe(false)
+    expect(result2.errors).toContain('字典类型只能包含小写字母和下划线')
+  })
+  
+  it('应该阻止删除包含字典数据的字典类型', () => {
+    const dictType = {
+      dictId: 1,
+      dictName: '用户性别',
+      dictType: 'sys_user_sex',
+      children: [{ dictCode: 1, dictLabel: '男' }]
+    }
+    
+    handleDeleteDictType(dictType)
+    
+    expect(ElMessage.warning).toHaveBeenCalledWith('该字典类型下存在字典数据，请先删除字典数据')
+  })
+})
+```
 
 ### 基于属性的测试
 
 使用 **fast-check** 库进行基于属性的测试。
 
 **配置要求：**
-- 每个属性测试至少运行 100 次迭代（由于随机化）
+- 每个属性测试至少运行 100 次迭代
 - 每个测试必须引用其设计文档属性
 - 标签格式：**Feature: dict-management, Property {number}: {property_text}**
-- 每个正确性属性必须由单个基于属性的测试实现
 
 **示例：**
 
@@ -1018,26 +1176,27 @@ import fc from 'fast-check'
 
 describe('Property Tests - Dict Management', () => {
   /**
-   * Feature: dict-management, Property 1: 搜索结果匹配
-   * 对于任意搜索关键词和数据列表，返回的所有结果都应该在相应字段中包含该关键词
+   * Feature: dict-management, Property 1: 字典类型搜索结果匹配
+   * 对于任意搜索关键词，返回的所有字典类型的字典名称或字典类型字段都应该包含该搜索关键词
    */
-  it('属性 1: 搜索应该返回包含关键词的所有结果', () => {
+  it('属性 1: 字典类型搜索应该返回所有匹配的结果', () => {
     fc.assert(
       fc.property(
         fc.array(fc.record({
           dictId: fc.integer({ min: 1, max: 1000 }),
-          dictName: fc.string({ minLength: 1, maxLength: 20 }),
-          dictType: fc.string({ minLength: 1, maxLength: 20 })
+          dictName: fc.string({ minLength: 2, maxLength: 20 }),
+          dictType: fc.string({ minLength: 2, maxLength: 20 }),
+          status: fc.constantFrom('0', '1')
         })),
-        fc.string({ minLength: 1, maxLength: 10 }),
+        fc.string({ minLength: 1, maxLength: 5 }),
         (dictTypes, keyword) => {
-          const results = searchDictTypes(dictTypes, keyword)
+          const searchResult = searchDictTypes(dictTypes, keyword)
           
           // 验证所有结果都包含关键词
-          results.forEach(item => {
-            const matchesName = item.dictName.includes(keyword)
-            const matchesType = item.dictType.includes(keyword)
-            expect(matchesName || matchesType).toBe(true)
+          searchResult.forEach(dict => {
+            const hasMatch = dict.dictName.includes(keyword) || 
+                           dict.dictType.includes(keyword)
+            expect(hasMatch).toBe(true)
           })
         }
       ),
@@ -1047,22 +1206,26 @@ describe('Property Tests - Dict Management', () => {
   
   /**
    * Feature: dict-management, Property 3: 必填字段验证
-   * 对于任意表单提交，如果任何必填字段为空或仅包含空白字符，则验证应该失败
+   * 对于任意缺少必填字段的表单数据，提交时应该被拒绝并显示验证错误
    */
-  it('属性 3: 必填字段为空或空白字符应该验证失败', () => {
+  it('属性 3: 表单验证应该拒绝缺少必填字段的数据', () => {
     fc.assert(
       fc.property(
         fc.record({
-          dictName: fc.oneof(
-            fc.constant(''),
-            fc.string().filter(s => s.trim().length === 0)
-          ),
-          dictType: fc.string({ minLength: 1, maxLength: 20 })
+          dictName: fc.option(fc.string({ minLength: 2, maxLength: 20 }), { nil: null }),
+          dictType: fc.option(fc.string({ minLength: 2, maxLength: 20 }), { nil: null }),
+          remark: fc.string({ maxLength: 200 })
         }),
-        async (formData) => {
-          const result = await validateDictTypeForm(formData)
-          expect(result.valid).toBe(false)
-          expect(result.errors).toContain('dictName')
+        (formData) => {
+          const result = validateDictTypeForm(formData as any)
+          
+          // 如果任一必填字段为空，验证应该失败
+          const hasEmptyRequired = !formData.dictName || !formData.dictType
+          
+          if (hasEmptyRequired) {
+            expect(result.valid).toBe(false)
+            expect(result.errors.length).toBeGreaterThan(0)
+          }
         }
       ),
       { numRuns: 100 }
@@ -1070,41 +1233,153 @@ describe('Property Tests - Dict Management', () => {
   })
   
   /**
-   * Feature: dict-management, Property 14: 字典数据排序正确性
-   * 对于任意字典数据列表，渲染后的顺序应该按照 dictSort 升序排列
+   * Feature: dict-management, Property 4: 空白字符验证
+   * 对于任意仅包含空白字符的必填字段，提交时应该被拒绝
    */
-  it('属性 14: 字典数据应该按 dictSort 正确排序', () => {
+  it('属性 4: 表单验证应该拒绝仅包含空白字符的字段', () => {
     fc.assert(
       fc.property(
-        fc.array(fc.record({
-          dictCode: fc.integer({ min: 1, max: 1000 }),
-          dictLabel: fc.string({ minLength: 1, maxLength: 20 }),
-          dictSort: fc.integer({ min: 0, max: 100 }),
-          createTime: fc.date()
-        }), { minLength: 2 }),
-        (dictDataList) => {
-          const sorted = sortDictData(dictDataList)
+        fc.stringOf(fc.constantFrom(' ', '\t', '\n')),
+        (whitespaceString) => {
+          const formData = {
+            dictName: whitespaceString,
+            dictType: 'test_type',
+            remark: ''
+          }
           
-          // 验证排序正确性
-          for (let i = 0; i < sorted.length - 1; i++) {
-            const current = sorted[i]
-            const next = sorted[i + 1]
-            
-            if (current.dictSort === next.dictSort) {
-              // dictSort 相同时，按创建时间排序
-              expect(current.createTime.getTime()).toBeLessThanOrEqual(next.createTime.getTime())
-            } else {
-              // dictSort 不同时，按 dictSort 排序
-              expect(current.dictSort).toBeLessThan(next.dictSort)
-            }
+          const result = validateDictTypeForm(formData)
+          
+          if (whitespaceString.trim() === '') {
+            expect(result.valid).toBe(false)
+            expect(result.errors).toContain('请输入字典名称')
           }
         }
       ),
       { numRuns: 100 }
     )
   })
+  
+  /**
+   * Feature: dict-management, Property 19: 字典数据排序正确性
+   * 对于任意字典数据列表，显示时应该按照字典排序值升序排列
+   */
+  it('属性 19: 字典数据应该按排序值正确排序', () => {
+    fc.assert(
+      fc.property(
+        fc.array(fc.record({
+          dictCode: fc.integer({ min: 1, max: 1000 }),
+          dictLabel: fc.string({ minLength: 1, maxLength: 20 }),
+          dictValue: fc.string({ minLength: 1, maxLength: 20 }),
+          dictSort: fc.integer({ min: 0, max: 999 }),
+          dictType: fc.constant('test_type')
+        }), { minLength: 2 }),
+        (dictDataList) => {
+          const sorted = sortDictData(dictDataList)
+          
+          // 验证排序正确性
+          for (let i = 0; i < sorted.length - 1; i++) {
+            expect(sorted[i].dictSort).toBeLessThanOrEqual(sorted[i + 1].dictSort)
+          }
+        }
+      ),
+      { numRuns: 100 }
+    )
+  })
+  
+  /**
+   * Feature: dict-management, Property 21: 状态过滤正确性
+   * 对于任意字典数据，当状态为启用时应该在字典选择器中显示，
+   * 当状态为禁用时应该在字典选择器中隐藏
+   */
+  it('属性 21: 字典选择器应该正确过滤禁用状态的数据', () => {
+    fc.assert(
+      fc.property(
+        fc.array(fc.record({
+          dictCode: fc.integer({ min: 1, max: 1000 }),
+          dictLabel: fc.string({ minLength: 1, maxLength: 20 }),
+          dictValue: fc.string({ minLength: 1, maxLength: 20 }),
+          dictSort: fc.integer({ min: 0, max: 999 }),
+          dictType: fc.constant('test_type'),
+          status: fc.constantFrom('0', '1')
+        })),
+        (dictDataList) => {
+          const filtered = filterDictDataForSelector(dictDataList)
+          
+          // 验证所有返回的数据状态都是启用
+          filtered.forEach(dict => {
+            expect(dict.status).toBe('0')
+          })
+        }
+      ),
+      { numRuns: 100 }
+    )
+  })
+  
+  /**
+   * Feature: dict-management, Property 14: 树形结构正确性
+   * 对于任意字典类型和字典数据集合，构建的树形结构应该满足：
+   * 字典类型作为父节点，其对应的字典数据作为子节点
+   */
+  it('属性 14: buildDictTree 应该正确构建树形结构', () => {
+    fc.assert(
+      fc.property(
+        fc.array(fc.record({
+          dictId: fc.integer({ min: 1, max: 1000 }),
+          dictName: fc.string({ minLength: 2, maxLength: 20 }),
+          dictType: fc.stringOf(fc.constantFrom(...'abcdefghijklmnopqrstuvwxyz_'.split('')), { minLength: 2, maxLength: 20 }),
+          status: fc.constantFrom('0', '1')
+        })),
+        (dictTypes) => {
+          // 为每个字典类型生成随机字典数据
+          const dictDataMap = new Map<string, DictData[]>()
+          dictTypes.forEach(dictType => {
+            const dataCount = Math.floor(Math.random() * 5)
+            const dictDataList = Array.from({ length: dataCount }, (_, i) => ({
+              dictCode: i + 1,
+              dictLabel: `Label ${i}`,
+              dictValue: `${i}`,
+              dictSort: i,
+              dictType: dictType.dictType,
+              status: '0'
+            }))
+            dictDataMap.set(dictType.dictType, dictDataList)
+          })
+          
+          const tree = buildDictTree(dictTypes, dictDataMap)
+          
+          // 验证树形结构
+          tree.forEach((node, index) => {
+            // 验证父节点是字典类型
+            expect(node.type).toBe('dict-type')
+            expect(node.data).toEqual(dictTypes[index])
+            
+            // 验证子节点是字典数据
+            if (node.children) {
+              node.children.forEach(child => {
+                expect(child.type).toBe('dict-data')
+                expect(child.data.dictType).toBe(dictTypes[index].dictType)
+              })
+            }
+          })
+        }
+      ),
+      { numRuns: 100 }
+    )
+  })
+  
+  /**
+   * Feature: dict-management, Property 23: 批量删除按钮状态正确性
+   * 对于任意字典数据选择状态，按钮状态应该正确反映选择情况
+   */
+  it('属性 23: 批量删除按钮状态应该根据选择情况正确变化', () => {
 })
 ```
+
+### 测试覆盖目标
+
+- **单元测试覆盖率**：核心业务逻辑 > 80%
+- **属性测试覆盖**：所有 27 个正确性属性都应该有对应的属性测试
+- **集成测试**：关键用户流程（新增字典类型、新增字典数据、搜索、删除）
 
 ### 测试数据生成器
 
@@ -1114,32 +1389,26 @@ describe('Property Tests - Dict Management', () => {
 // 生成有效的字典类型对象
 const dictTypeArbitrary = fc.record({
   dictId: fc.integer({ min: 1, max: 1000 }),
-  dictName: fc.string({ minLength: 1, maxLength: 50 }),
-  dictType: fc.string({ minLength: 1, maxLength: 50 }),
+  dictName: fc.string({ minLength: 2, maxLength: 50 }),
+  dictType: fc.stringOf(fc.constantFrom(...'abcdefghijklmnopqrstuvwxyz_'.split('')), { minLength: 2, maxLength: 50 }),
   status: fc.constantFrom('0', '1'),
-  remark: fc.option(fc.string({ maxLength: 200 }))
+  remark: fc.string({ maxLength: 200 })
 })
 
 // 生成有效的字典数据对象
 const dictDataArbitrary = fc.record({
   dictCode: fc.integer({ min: 1, max: 1000 }),
-  dictSort: fc.integer({ min: 0, max: 999 }),
+  dictType: fc.stringOf(fc.constantFrom(...'abcdefghijklmnopqrstuvwxyz_'.split('')), { minLength: 2, maxLength: 50 }),
   dictLabel: fc.string({ minLength: 1, maxLength: 50 }),
-  dictValue: fc.string({ minLength: 1, maxLength: 50 }),
-  dictType: fc.string({ minLength: 1, maxLength: 50 }),
-  cssClass: fc.option(fc.string({ maxLength: 100 })),
+  dictValue: fc.string({ minLength: 1, maxLength: 100 }),
+  dictSort: fc.integer({ min: 0, max: 999 }),
   listClass: fc.constantFrom('primary', 'success', 'info', 'warning', 'error', 'default'),
+  cssClass: fc.string({ maxLength: 100 }),
   isDefault: fc.constantFrom('Y', 'N'),
   status: fc.constantFrom('0', '1'),
-  remark: fc.option(fc.string({ maxLength: 200 }))
+  remark: fc.string({ maxLength: 200 })
 })
 ```
-
-### 测试覆盖目标
-
-- **单元测试覆盖率**：核心业务逻辑 > 80%
-- **属性测试覆盖**：所有 17 个正确性属性都应该有对应的属性测试
-- **集成测试**：关键用户流程（新增字典类型、新增字典数据、编辑、删除、缓存刷新）
 
 ### 测试环境
 
@@ -1157,12 +1426,38 @@ const dictDataArbitrary = fc.record({
 
 ## 实现注意事项
 
-1. **字典类型唯一性**: dictType 字段应该在系统中唯一，编辑时不允许修改
-2. **字典数据关联**: 删除字典类型前应检查是否有关联的字典数据
-3. **缓存刷新**: 修改字典数据后应提示用户刷新缓存以确保其他模块获取最新数据
-4. **状态管理**: 禁用状态的字典数据不应该在其他模块的选择器中显示
-5. **排序规则**: 字典数据应该按 dictSort 升序排列，相同时按创建时间排序
-6. **回显样式**: 使用 Element Plus 的 el-tag 组件显示回显样式
-7. **加载状态**: 所有异步操作需显示 loading 状态
-8. **错误处理**: API 错误需友好提示用户
-9. **数据刷新**: 操作成功后自动刷新列表数据
+1. **树形表格结构**: 使用 Element Plus 的 el-table 的 tree-props 属性实现树形结构，字典类型作为父节点，字典数据作为子节点
+
+2. **数据加载策略**: 页面初始化时需要同时加载所有字典类型和字典数据，然后构建树形结构。可以考虑使用 Promise.all 并行加载以提高性能
+
+3. **节点唯一标识**: 使用 `type-${dictId}` 作为字典类型节点的 id，使用 `data-${dictCode}` 作为字典数据节点的 id，确保每个节点有唯一标识
+
+4. **字典类型字段约束**: 字典类型字段只能包含小写字母和下划线，需要在表单验证中添加正则表达式验证
+
+5. **字典数据自动填充**: 点击字典类型节点的"新增数据"按钮时，需要将该字典类型传递给对话框，并自动填充字典类型字段且设置为禁用状态
+
+6. **回显样式**: 字典数据的 listClass 字段用于控制标签显示样式，需要在列表中使用 el-tag 组件并根据 listClass 值设置不同的 type
+
+7. **排序规则**: 构建树形结构时，字典数据需要按照 dictSort 升序排列，相同排序值时按创建时间排序
+
+8. **状态过滤**: 在其他模块调用字典数据接口时，应该只返回状态为启用（'0'）的数据
+
+9. **删除保护**: 删除字典类型前需要检查是否有子节点（字典数据），如果有则阻止删除并提示用户
+
+10. **缓存刷新**: 刷新缓存功能调用后端接口，成功后显示提示信息即可，不需要刷新前端列表
+
+11. **导出功能**: 导出接口返回 Blob 类型数据，需要创建下载链接触发浏览器下载。导出时包含所有字典类型和字典数据
+
+12. **展开/折叠**: 提供展开所有节点和折叠所有节点的功能，通过控制 default-expand-all 属性实现
+
+13. **表单验证**: 使用 Element Plus 的表单验证规则，确保数据有效性
+
+14. **加载状态**: 所有异步操作需显示 loading 状态
+
+15. **错误处理**: API 错误需友好提示用户
+
+16. **数据刷新**: 操作成功后自动刷新树形数据
+
+17. **权限控制**: 使用 `hasAuth` 函数控制按钮和操作的可见性（如果项目有权限系统）
+
+18. **性能优化**: 如果字典类型和字典数据数量较多，考虑使用虚拟滚动或懒加载优化性能
