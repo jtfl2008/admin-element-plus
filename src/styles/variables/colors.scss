@@ -84,12 +84,14 @@
   --color-bg-2: #ffffff;
   --color-bg-elevated: #ffffff;
   --color-bg-overlay: rgba(0, 0, 0, 0.5);
+  --color-bg-hover: var(--gray-100);
   
   /* 旧版背景颜色别名（向后兼容） */
   --bg-page: var(--gray-50);
   --bg-container: #ffffff;
   --bg-elevated: #ffffff;
   --bg-overlay: rgba(0, 0, 0, 0.5);
+  --bg-hover: var(--gray-100);
 
   /* 边框颜色 */
   --color-border: var(--gray-200);
@@ -148,10 +150,12 @@
   --color-bg-1: var(--gray-dark-50);
   --color-bg-2: var(--gray-dark-100);
   --color-bg-elevated: var(--gray-dark-200);
+  --color-bg-hover: var(--gray-dark-200);
   
   --bg-page: var(--gray-dark-50);
   --bg-container: var(--gray-dark-100);
   --bg-elevated: var(--gray-dark-200);
+  --bg-hover: var(--gray-dark-200);
 
   --color-border: var(--gray-dark-200);
   --color-border-light: var(--gray-dark-100);

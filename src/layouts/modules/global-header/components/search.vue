@@ -14,6 +14,7 @@
       width="600px"
       :close-on-click-modal="true"
       :close-on-press-escape="true"
+      append-to-body
     >
       <el-input
         v-model="keyword"
@@ -97,7 +98,7 @@ watch(keyword, (newKeyword) => {
   const visited = new Set<string>() // 防止循环引用
 
   // 递归搜索菜单
-  function searchMenu(menus: any[], depth = 0) {
+  function searchMenu(menus: any[], depth = 0, parentPath = '') {
     // 限制递归深度，防止无限递归
     if (depth > 10) {
       return
@@ -112,21 +113,28 @@ watch(keyword, (newKeyword) => {
       visited.add(menuKey)
 
       const title = menu.meta?.title || ''
-      const path = menu.path || ''
+      const menuPath = menu.path || ''
+      
+      // 构建完整路径：如果是绝对路径则直接使用，否则拼接父路径
+      const fullPath = menuPath.startsWith('/') 
+        ? menuPath 
+        : parentPath 
+          ? `${parentPath}/${menuPath}` 
+          : menuPath
 
       if (
         title.toLowerCase().includes(lowerKeyword) ||
-        path.toLowerCase().includes(lowerKeyword)
+        menuPath.toLowerCase().includes(lowerKeyword)
       ) {
         result.push({
           title,
-          path,
+          path: fullPath,
           icon: menu.meta?.icon,
         })
       }
 
       if (menu.children && Array.isArray(menu.children) && menu.children.length > 0) {
-        searchMenu(menu.children, depth + 1)
+        searchMenu(menu.children, depth + 1, fullPath)
       }
     })
   }
