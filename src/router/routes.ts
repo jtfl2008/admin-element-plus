@@ -165,6 +165,16 @@ export const asyncRoutes: RouteRecordRaw[] = [
         },
       },
       {
+        path: 'post',
+        name: 'SystemPost',
+        component: () => import('@/views/system/post/index.vue'),
+        meta: {
+          title: '岗位管理',
+          icon: 'Briefcase',
+          requiresAuth: true,
+        },
+      },
+      {
         path: 'dict',
         name: 'SystemDict',
         component: () => import('@/views/system/dict/index.vue'),

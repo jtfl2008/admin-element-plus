@@ -108,12 +108,42 @@ export interface DeptTree {
  * 岗位实体
  */
 export interface Post {
-  postId: number
-  postCode: string
-  postName: string
-  postSort: number
-  status: string
-  remark?: string
+  postId: number              // 岗位ID
+  tenantId?: number           // 租户编号
+  deptId?: number             // 部门ID
+  deptName?: string           // 部门名称
+  postCode: string            // 岗位编码
+  postCategory?: string       // 类别编码
+  postName: string            // 岗位名称
+  postSort: number            // 显示顺序
+  status: '0' | '1'           // 状态（0:正常 1:停用）
+  remark?: string             // 备注
+  createTime?: string         // 创建时间
+  updateTime?: string         // 更新时间
+}
+
+/**
+ * 岗位搜索参数
+ */
+export interface PostSearchParams extends PageQuery {
+  postCode?: string           // 岗位编码
+  postName?: string           // 岗位名称
+  status?: '0' | '1'          // 状态
+  deptId?: number             // 归属部门ID
+}
+
+/**
+ * 岗位操作参数（新增/编辑）
+ */
+export interface PostOperateParams {
+  postId?: number             // 岗位ID（编辑时必填）
+  deptId?: number             // 部门ID
+  postCode: string            // 岗位编码
+  postCategory?: string       // 类别编码
+  postName: string            // 岗位名称
+  postSort: number            // 显示顺序
+  status: '0' | '1'           // 状态
+  remark?: string             // 备注
 }
 
 /**
