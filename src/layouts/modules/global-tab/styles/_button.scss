@@ -1,0 +1,99 @@
+/**
+ * 按钮主题样式
+ * 
+ * 特点：
+ * - 类似按钮的外观，现代化设计
+ * - 较小的圆角（4px），简洁利落
+ * - 紧凑的内边距，节省空间
+ * - 活动状态使用主题色背景，对比鲜明
+ * - 无阴影效果，扁平化设计
+ * 
+ * 适用场景：
+ * - 现代化、扁平化的界面设计
+ * - 空间有限需要紧凑布局的场景
+ * - 追求简洁视觉效果的应用
+ */
+
+.global-tab.theme-button {
+  /* 标签页列表容器 */
+  .tab-list {
+    gap: var(--tab-theme-gap);
+  }
+
+  /* 标签页项基础样式 */
+  .tab-item {
+    background-color: var(--tab-theme-bg);
+    color: var(--tab-theme-text);
+    border: 1px solid var(--tab-theme-border);
+    border-radius: var(--tab-theme-border-radius);
+    padding: var(--tab-theme-padding);
+    transition: all var(--tab-theme-transition-duration) var(--tab-theme-transition-timing);
+    
+    /* 按钮主题不显示底部下划线 */
+    &::before {
+      display: none;
+    }
+
+    /* 标签页文字 */
+    .tab-label {
+      color: var(--tab-theme-text);
+      transition: color var(--tab-theme-transition-duration) var(--tab-theme-transition-timing);
+      font-size: 14px;
+    }
+
+    /* 关闭按钮 */
+    .tab-close {
+      .el-icon {
+        color: var(--tab-theme-text);
+        transition: color var(--tab-theme-transition-duration) var(--tab-theme-transition-timing);
+      }
+    }
+
+    /* 悬停状态 */
+    &:hover:not(.is-active) {
+      background-color: var(--tab-theme-hover-bg);
+      border-color: var(--tab-theme-hover-border);
+      transform: translateY(-1px);
+
+      .tab-label {
+        color: var(--tab-theme-hover-text);
+      }
+
+      .tab-close .el-icon {
+        color: var(--tab-theme-hover-text);
+      }
+    }
+
+    /* 活动状态 */
+    &.is-active {
+      background-color: var(--tab-theme-active-bg);
+      border-color: var(--tab-theme-active-border);
+      box-shadow: none;
+
+      .tab-label {
+        color: var(--tab-theme-active-text);
+        font-weight: 600;
+      }
+
+      .tab-close .el-icon {
+        color: var(--tab-theme-active-text);
+      }
+
+      /* 活动状态的关闭按钮悬停效果 */
+      .tab-close:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+
+        .el-icon {
+          color: var(--tab-theme-active-text);
+        }
+      }
+    }
+
+    /* 拖拽状态 */
+    &.is-dragging {
+      opacity: 0.5;
+      cursor: move;
+      transform: scale(0.95);
+    }
+  }
+}

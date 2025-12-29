@@ -40,6 +40,8 @@ export interface LayoutConfig {
   minWidth: number
   /** 主题色 */
   themeColor?: string
+  /** 标签页主题 */
+  tabTheme?: 'card' | 'button' | 'underline'
 }
 
 /**

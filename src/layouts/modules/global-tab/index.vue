@@ -1,5 +1,5 @@
 <template>
-  <div v-if="showTab" class="global-tab">
+  <div v-if="showTab" class="global-tab" :class="`theme-${currentTabTheme}`">
     <!-- 左侧滚动按钮 -->
     <button
       v-show="showScrollButton"
@@ -52,7 +52,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAppStore } from '@/stores/modules/app'
 import { useTabStore } from '@/stores/modules/tab'
@@ -60,6 +60,45 @@ import { ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
 import TabItem from './components/tab-item.vue'
 import ContextMenu from './components/context-menu.vue'
 import type { TabItem as TabItemType } from '@/typings/layout'
+import { getThemeConfig, type TabThemeType, type TabThemeConfig } from './config/tab-themes'
+
+/**
+ * 组件 Props
+ */
+interface Props {
+  /**
+   * 主题类型
+   * @default 'card'
+   * @example
+   * ```vue
+   * <GlobalTab theme="button" />
+   * ```
+   */
+  theme?: TabThemeType
+  
+  /**
+   * 自定义主题配置
+   * 用于覆盖默认主题的部分或全部样式
+   * @example
+   * ```vue
+   * <GlobalTab 
+   *   theme="card"
+   *   :theme-config="{
+   *     light: {
+   *       activeBg: '#ff0000',
+   *       activeText: '#ffffff'
+   *     }
+   *   }"
+   * />
+   * ```
+   */
+  themeConfig?: Partial<TabThemeConfig>
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  theme: undefined,
+  themeConfig: undefined
+})
 
 const router = useRouter()
 const route = useRoute()
@@ -77,6 +116,98 @@ const draggedTab = ref<TabItemType | null>(null)
 const showTab = computed(() => appStore.layoutConfig.showTab)
 const tabList = computed(() => tabStore.tabList)
 const activeTab = computed(() => tabStore.activeTab)
+
+/**
+ * 当前标签页主题（优先使用 appStore 配置，props 可以覆盖）
+ */
+const currentTabTheme = computed(() => {
+  // 如果 props.theme 明确传递了值，使用 props.theme
+  // 否则使用 appStore 的配置，最后回退到 'card'
+  const theme = props.theme || appStore.layoutConfig.tabTheme || 'card'
+  console.log('[GlobalTab] 当前主题:', theme, {
+    propsTheme: props.theme,
+    storeTheme: appStore.layoutConfig.tabTheme
+  })
+  return theme
+})
+
+/**
+ * 计算当前主题配置
+ */
+const currentThemeConfig = computed(() => {
+  return getThemeConfig(currentTabTheme.value, props.themeConfig)
+})
+
+/**
+ * 检测当前是否为深色模式
+ * TODO: 根据实际项目的深色模式实现方式调整
+ */
+const isDarkMode = computed(() => {
+  // 从 appStore 获取深色模式状态
+  // 如果项目中没有深色模式，可以暂时返回 false
+  return false
+})
+
+/**
+ * 获取当前模式的主题颜色
+ */
+const currentColors = computed(() => {
+  return isDarkMode.value 
+    ? currentThemeConfig.value.dark 
+    : currentThemeConfig.value.light
+})
+
+/**
+ * 应用主题样式
+ * 通过更新 CSS 变量来动态切换主题
+ */
+function applyTheme() {
+  try {
+    const colors = currentColors.value
+    const root = document.documentElement
+    
+    console.log('[GlobalTab] 应用主题:', currentTabTheme.value, colors)
+    
+    // 批量更新 CSS 变量
+    root.style.setProperty('--tab-theme-bg', colors.tabBg)
+    root.style.setProperty('--tab-theme-text', colors.tabText)
+    root.style.setProperty('--tab-theme-border', colors.tabBorder)
+    root.style.setProperty('--tab-theme-active-bg', colors.activeBg)
+    root.style.setProperty('--tab-theme-active-text', colors.activeText)
+    root.style.setProperty('--tab-theme-active-border', colors.activeBorder)
+    root.style.setProperty('--tab-theme-hover-bg', colors.hoverBg)
+    root.style.setProperty('--tab-theme-hover-text', colors.hoverText)
+    root.style.setProperty('--tab-theme-hover-border', colors.hoverBorder)
+    root.style.setProperty('--tab-theme-border-radius', colors.borderRadius)
+    root.style.setProperty('--tab-theme-padding', colors.padding)
+    root.style.setProperty('--tab-theme-gap', colors.gap)
+    root.style.setProperty('--tab-theme-shadow', colors.shadow || 'none')
+    
+    // 下划线主题专用变量
+    if (colors.underlineColor) {
+      root.style.setProperty('--tab-theme-underline-color', colors.underlineColor)
+    }
+    if (colors.underlineHeight) {
+      root.style.setProperty('--tab-theme-underline-height', colors.underlineHeight)
+    }
+  } catch (error) {
+    console.error('应用主题失败:', error)
+  }
+}
+
+/**
+ * 监听主题颜色变化
+ */
+watch(currentColors, () => {
+  applyTheme()
+}, { immediate: true })
+
+/**
+ * 组件挂载时应用主题
+ */
+onMounted(() => {
+  applyTheme()
+})
 
 /**
  * 监听路由变化，添加标签页
@@ -321,15 +452,18 @@ function handleDrop(e: DragEvent, targetTab: TabItemType) {
 </script>
 
 <style scoped lang="scss">
+@import './styles/index.scss';
+
 .global-tab {
   display: flex;
   align-items: center;
-  height: 48px;
+  height: 60px;
   background-color: var(--color-bg-2, #ffffff);
   border-bottom: 1px solid var(--color-border, #e5e5e5);
   position: relative;
   padding: 0 var(--spacing-sm, 12px);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  flex-shrink: 0; /* 防止在 flex 布局中被压缩 */
 }
 
 .tab-scroll-button {

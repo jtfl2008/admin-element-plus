@@ -93,10 +93,13 @@ const layoutConfig = computed(() => appStore.layoutConfig)
 
 .main-breadcrumb {
   flex-shrink: 0;
-  padding: var(--spacing-sm) var(--spacing-lg);
-  background-color: var(--bg-primary);
-  border-bottom: 1px solid var(--border-light);
-  transition: background-color var(--transition-normal);
+  min-height: 40px;
+  padding: 0.75rem 1.5rem;
+  background-color: #ffffff;
+  border-bottom: 1px solid #f3f4f6;
+  transition: background-color 0.3s;
+  display: flex;
+  align-items: center;
 }
 
 .main-content {

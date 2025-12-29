@@ -9,6 +9,9 @@
   --duration-base: 250ms;
   --duration-slow: 350ms;
   --duration-slower: 500ms;
+  
+  /* 别名（向后兼容） */
+  --transition-duration: var(--duration-base);
 
   /* ===== 缓动函数 ===== */
   --ease-linear: linear;
@@ -16,6 +19,9 @@
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  
+  /* 别名（向后兼容） */
+  --transition-timing: var(--ease-in-out);
 
   /* ===== 常用过渡组合 ===== */
   --transition-base: all var(--duration-base) var(--ease-in-out);
@@ -25,6 +31,9 @@
   --transition-transform: transform var(--duration-base) var(--ease-in-out);
   --transition-opacity: opacity var(--duration-base) var(--ease-in-out);
   --transition-shadow: box-shadow var(--duration-base) var(--ease-in-out);
+  
+  /* 别名（向后兼容） */
+  --transition-normal: var(--transition-base);
 
   /* ===== Z-Index 层级 ===== */
   --z-dropdown: 1000;

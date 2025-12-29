@@ -23,6 +23,7 @@ const DEFAULT_LAYOUT_CONFIG: LayoutConfig = {
   enableAnimation: true,
   minWidth: 1280,
   themeColor: '#1890ff',
+  tabTheme: 'card',
 }
 
 export const useAppStore = defineStore(

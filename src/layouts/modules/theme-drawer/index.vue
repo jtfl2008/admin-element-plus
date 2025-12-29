@@ -27,6 +27,11 @@
 
         <el-divider />
 
+        <!-- 标签页主题 -->
+        <TabTheme />
+
+        <el-divider />
+
         <!-- 操作按钮 -->
         <div class="drawer-actions">
           <el-button type="primary" @click="handleCopy">
@@ -51,6 +56,7 @@ import ThemeMode from './components/theme-mode.vue'
 import ThemeColor from './components/theme-color.vue'
 import LayoutMode from './components/layout-mode.vue'
 import LayoutConfig from './components/layout-config.vue'
+import TabTheme from './components/tab-theme.vue'
 
 interface Props {
   modelValue?: boolean

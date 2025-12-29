@@ -1,0 +1,76 @@
+/**
+ * 标签页主题 CSS 变量定义
+ * 
+ * 本文件定义了所有主题相关的 CSS 变量，使用 --tab-theme-* 前缀统一命名。
+ * 这些变量将在运行时通过 JavaScript 动态更新，以实现主题切换和模式切换。
+ * 
+ * 命名规范：
+ * - 基础变量：--tab-theme-{property}
+ * - 状态变量：--tab-theme-{state}-{property}
+ * - 布局变量：--tab-theme-{layout-property}
+ */
+
+:root {
+  /* ==================== 基础样式变量 ==================== */
+  
+  /** 标签页背景色 */
+  --tab-theme-bg: transparent;
+  
+  /** 标签页文字色 */
+  --tab-theme-text: #333333;
+  
+  /** 标签页边框色 */
+  --tab-theme-border: transparent;
+  
+  /* ==================== 活动状态变量 ==================== */
+  
+  /** 活动状态背景色 */
+  --tab-theme-active-bg: #e6f7ff;
+  
+  /** 活动状态文字色 */
+  --tab-theme-active-text: #1890ff;
+  
+  /** 活动状态边框色 */
+  --tab-theme-active-border: #1890ff;
+  
+  /* ==================== 悬停状态变量 ==================== */
+  
+  /** 悬停状态背景色 */
+  --tab-theme-hover-bg: #f5f5f5;
+  
+  /** 悬停状态文字色 */
+  --tab-theme-hover-text: #333333;
+  
+  /** 悬停状态边框色 */
+  --tab-theme-hover-border: #e5e5e5;
+  
+  /* ==================== 布局变量 ==================== */
+  
+  /** 圆角半径 */
+  --tab-theme-border-radius: 8px;
+  
+  /** 内边距 */
+  --tab-theme-padding: 0 16px;
+  
+  /** 标签页间距 */
+  --tab-theme-gap: 8px;
+  
+  /** 阴影效果 */
+  --tab-theme-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  
+  /* ==================== 下划线主题专用变量 ==================== */
+  
+  /** 下划线颜色（仅 underline 主题使用） */
+  --tab-theme-underline-color: #1890ff;
+  
+  /** 下划线高度（仅 underline 主题使用） */
+  --tab-theme-underline-height: 3px;
+  
+  /* ==================== 过渡效果 ==================== */
+  
+  /** 颜色过渡时间 */
+  --tab-theme-transition-duration: 0.3s;
+  
+  /** 过渡缓动函数 */
+  --tab-theme-transition-timing: ease;
+}

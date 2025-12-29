@@ -85,79 +85,17 @@ function handleDrop(e: DragEvent) {
   align-items: center;
   gap: var(--spacing-xs, 8px);
   height: 32px;
-  padding: 0 var(--spacing-md, 16px);
-  background-color: transparent;
-  border: 1px solid transparent;
-  border-radius: var(--radius-md, 8px);
   cursor: pointer;
-  transition: all var(--transition-duration, 0.3s);
   user-select: none;
   position: relative;
   flex-shrink: 0;
-
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    bottom: -9px;
-    width: 100%;
-    height: 2px;
-    background-color: transparent;
-    transition: background-color var(--transition-duration, 0.3s);
-  }
-
-  &:hover {
-    background-color: var(--color-bg-1, #f5f5f5);
-    border-color: var(--color-border, #e5e5e5);
-  }
-
-  &.is-active {
-    background-color: var(--color-primary-light, #e6f7ff);
-    border-color: var(--color-primary, #1890ff);
-    color: var(--color-primary, #1890ff);
-
-    &::before {
-      background-color: var(--color-primary, #1890ff);
-    }
-
-    .tab-label {
-      color: var(--color-primary, #1890ff);
-      font-weight: 600;
-    }
-
-    .tab-close {
-      .el-icon {
-        color: var(--color-primary, #1890ff);
-      }
-
-      &:hover {
-        background-color: var(--color-primary, #1890ff);
-        
-        .el-icon {
-          color: #ffffff;
-        }
-      }
-    }
-  }
-
-  &.is-affix {
-    .tab-close {
-      display: none;
-    }
-  }
-
-  &.is-dragging {
-    opacity: 0.5;
-    cursor: move;
-    transform: scale(0.95);
-  }
+  
+  /* 基础样式由主题控制，这里只保留布局相关的样式 */
 }
 
 .tab-label {
   font-size: 14px;
-  color: var(--color-text-1, #333);
   white-space: nowrap;
-  transition: color var(--transition-duration, 0.3s);
 }
 
 .tab-close {
@@ -184,8 +122,13 @@ function handleDrop(e: DragEvent) {
 
   .el-icon {
     font-size: 12px;
-    color: var(--color-text-3, #999);
-    transition: color var(--transition-duration, 0.3s);
+  }
+}
+
+/* 固定标签页隐藏关闭按钮 */
+.tab-item.is-affix {
+  .tab-close {
+    display: none;
   }
 }
 </style>
