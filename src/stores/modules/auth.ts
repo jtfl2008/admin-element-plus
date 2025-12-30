@@ -121,6 +121,28 @@ export const useAuthStore = defineStore(
       clearToken()
     }
 
+    /**
+     * 更新用户信息
+     */
+    function updateUserInfo(info: Partial<UserInfo>) {
+      if (userInfo.value) {
+        Object.assign(userInfo.value, info)
+        // 更新本地存储
+        localStorage.setItem(USER_INFO_KEY, userInfo.value)
+      }
+    }
+
+    /**
+     * 更新用户头像
+     */
+    function updateAvatar(avatar: string) {
+      if (userInfo.value) {
+        userInfo.value.avatar = avatar
+        // 更新本地存储
+        localStorage.setItem(USER_INFO_KEY, userInfo.value)
+      }
+    }
+
     return {
       // 状态
       token,
@@ -136,6 +158,8 @@ export const useAuthStore = defineStore(
       logout,
       getUserInfo,
       resetToken,
+      updateUserInfo,
+      updateAvatar,
     }
   },
   {
