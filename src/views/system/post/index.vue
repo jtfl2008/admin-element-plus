@@ -47,14 +47,10 @@
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Delete, Edit, Download } from '@element-plus/icons-vue'
-// @ts-ignore
 import ConfigurableForm from '@/components/ConfigurableForm/index.vue'
-// @ts-ignore
 import ConfigurableTable from '@/components/ConfigurableTable/index.vue'
-// @ts-ignore
 import DialogForm from '@/components/DialogForm/index.vue'
 import { useAuth } from '@/hooks/useAuth'
-// @ts-ignore
 import useTable from '@/utils/useTable'
 import {
   fetchGetPostList,
@@ -116,7 +112,7 @@ const queryFields: FormFieldConfig[] = [
   {
     prop: 'deptId',
     label: '归属部门',
-    component: 'el-tree-select',
+    component: 'tree-select',
     data: deptTreeData.value,
     props: { label: 'label', value: 'id' },
     checkStrictly: true

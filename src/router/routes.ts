@@ -94,17 +94,6 @@ export const constantRoutes: RouteRecordRaw[] = [
           requiresAuth: true,
         },
       },
-      {
-        path: 'profile',
-        name: 'Profile',
-        component: () => import('@/views/profile/index.vue'),
-        meta: {
-          title: '个人中心',
-          icon: 'User',
-          requiresAuth: true,
-          hidden: true,
-        },
-      },
     ],
   },
   {
@@ -181,7 +170,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
         component: () => import('@/views/system/post/index.vue'),
         meta: {
           title: '岗位管理',
-          icon: 'Briefcase',
+          icon: 'Management',
           requiresAuth: true,
         },
       },
