@@ -155,6 +155,16 @@ export const asyncRoutes: RouteRecordRaw[] = [
         },
       },
       {
+        path: 'company',
+        name: 'SystemCompany',
+        component: () => import('@/views/system/company/index.vue'),
+        meta: {
+          title: '公司管理',
+          icon: 'Office',
+          requiresAuth: true,
+        },
+      },
+      {
         path: 'dept',
         name: 'SystemDept',
         component: () => import('@/views/system/dept/index.vue'),

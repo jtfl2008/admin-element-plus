@@ -294,3 +294,125 @@ export function searchDeptTree<T extends Record<string, any>>(
 
   return search(tree)
 }
+
+/**
+ * 过滤公司树（排除指定公司及其子公司）
+ * @param tree 公司树
+ * @param excludeCompanyId 要排除的公司ID
+ * @param idField ID字段名，默认为 'companyId'
+ * @param childrenField 子节点字段名，默认为 'children'
+ * @returns 过滤后的公司树
+ */
+export function filterCompanyTree<T extends Record<string, any>>(
+  tree: T[],
+  excludeCompanyId: number,
+  idField: string = 'companyId',
+  childrenField: string = 'children'
+): T[] {
+  if (!tree || tree.length === 0) {
+    return []
+  }
+
+  const result: T[] = []
+
+  tree.forEach(node => {
+    // 如果当前节点是要排除的公司，跳过（包括其所有子公司）
+    if (node[idField] === excludeCompanyId) {
+      return
+    }
+
+    // 创建节点副本
+    const newNode = { ...node } as any
+
+    // 如果有子节点，递归过滤
+    const children = node[childrenField] as T[]
+    if (children && children.length > 0) {
+      const filteredChildren = filterCompanyTree(
+        children,
+        excludeCompanyId,
+        idField,
+        childrenField
+      )
+      if (filteredChildren.length > 0) {
+        newNode[childrenField] = filteredChildren
+      } else {
+        delete newNode[childrenField]
+      }
+    }
+
+    result.push(newNode)
+  })
+
+  return result
+}
+
+/**
+ * 在公司树中搜索
+ * @param tree 公司树
+ * @param keyword 搜索关键词
+ * @param nameField 公司名称字段名，默认为 'companyName'
+ * @param codeField 公司编码字段名，默认为 'companyCode'
+ * @param childrenField 子节点字段名，默认为 'children'
+ * @returns 匹配的公司列表（包含父级路径）
+ */
+export function searchCompanyTree<T extends Record<string, any>>(
+  tree: T[],
+  keyword: string,
+  nameField: string = 'companyName',
+  codeField: string = 'companyCode',
+  childrenField: string = 'children'
+): T[] {
+  if (!tree || tree.length === 0) {
+    return []
+  }
+
+  // 如果没有关键词，返回原树
+  if (!keyword || keyword.trim() === '') {
+    return tree
+  }
+
+  /**
+   * 递归搜索函数
+   * @param nodes 节点数组
+   * @param parentMatched 父节点是否匹配
+   * @returns 匹配的节点数组
+   */
+  const search = (nodes: T[], parentMatched: boolean = false): T[] => {
+    const matched: T[] = []
+
+    nodes.forEach(node => {
+      const companyName = node[nameField] as string
+      const companyCode = node[codeField] as string
+      
+      // 检查公司名称或公司编码是否匹配
+      const isMatch = 
+        (companyName && companyName.includes(keyword)) ||
+        (companyCode && companyCode.includes(keyword))
+      
+      // 递归搜索子节点
+      const children = node[childrenField] as T[]
+      const childrenMatched = children && children.length > 0 
+        ? search(children, isMatch || parentMatched) 
+        : []
+
+      // 如果当前节点匹配、子节点有匹配、或父节点匹配，则保留此节点
+      if (isMatch || childrenMatched.length > 0 || parentMatched) {
+        const newNode = { ...node } as any
+        
+        // 如果有匹配的子节点，设置 children
+        if (childrenMatched.length > 0) {
+          newNode[childrenField] = childrenMatched
+        } else {
+          // 如果没有匹配的子节点，删除 children 属性
+          delete newNode[childrenField]
+        }
+        
+        matched.push(newNode)
+      }
+    })
+
+    return matched
+  }
+
+  return search(tree)
+}

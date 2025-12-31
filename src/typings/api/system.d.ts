@@ -424,3 +424,61 @@ export interface DictTreeNode {
   children?: DictTreeNode[]       // 子节点（仅字典类型有子节点）
   hasChildren?: boolean           // 是否有子节点
 }
+
+/**
+ * 公司实体
+ */
+export interface Company {
+  companyId: number               // 公司ID
+  parentId: number                // 父公司ID
+  companyCode: string             // 公司编码
+  companyName: string             // 公司名称
+  companyShortName?: string       // 公司简称
+  companyPath?: string            // 公司层级路径
+  orderNum: number                // 显示顺序
+  leader?: string                 // 负责人
+  phone?: string                  // 联系电话
+  email?: string                  // 邮箱
+  address?: string                // 详细地址
+  status: '0' | '1'               // 状态（0:正常 1:停用）
+  children?: Company[]            // 子公司
+  createTime?: string             // 创建时间
+  updateTime?: string             // 更新时间
+  remark?: string                 // 备注
+}
+
+/**
+ * 公司搜索参数
+ */
+export interface CompanySearchParams {
+  companyName?: string            // 公司名称
+  companyCode?: string            // 公司编码
+  status?: '0' | '1'              // 状态
+}
+
+/**
+ * 公司操作参数（新增/编辑）
+ */
+export interface CompanyOperateParams {
+  companyId?: number              // 公司ID（编辑时必填）
+  parentId: number                // 父公司ID
+  companyCode: string             // 公司编码
+  companyName: string             // 公司名称
+  companyShortName?: string       // 公司简称
+  orderNum: number                // 显示顺序
+  leader?: string                 // 负责人
+  phone?: string                  // 联系电话
+  email?: string                  // 邮箱
+  address?: string                // 详细地址
+  status: '0' | '1'               // 状态
+  remark?: string                 // 备注
+}
+
+/**
+ * 公司树节点
+ */
+export interface CompanyTree {
+  id: number
+  label: string
+  children?: CompanyTree[]
+}
