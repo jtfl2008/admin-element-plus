@@ -15,7 +15,8 @@ export type FieldComponentType =
   | 'date-picker'
   | 'radio-group'
   | 'checkbox-group'
-  | 'switch';
+  | 'switch'
+  | 'tree-select';
 
 /** 日期选择器类型 */
 export type DatePickerType =
